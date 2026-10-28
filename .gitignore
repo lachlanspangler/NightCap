@@ -1,0 +1,41 @@
+# deps
+node_modules/
+**/node_modules/
+
+# env & secrets: NEVER commit
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.p8
+*.key
+
+# local runtime state (ours only)
+.run/
+.data/
+.sim-udid
+*.log
+
+# builds
+dist/
+build/
+coverage/
+.expo/
+web-build/
+apps/mobile/ios/
+apps/mobile/android/
+
+# generated demo assets (rebuilt by make setup)
+apps/mobile/assets/demo/*.jpg
+packages/db/demo-photos/
+
+# maestro / test artifacts
+.maestro/artifacts/
+test-results/
+
+# os / editor
+.DS_Store
+.vscode/
