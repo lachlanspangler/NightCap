@@ -210,3 +210,29 @@ describe("City Nights", () => {
     ).toBe(404);
   });
 });
+
+describe("leaving a City table (code review #6)", () => {
+  it("removes you from the table, its names and its roll", async () => {
+    const t = await testApp();
+    const id = await event(t, 5);
+    const ps = [];
+    for (const n of ["Ava", "Noah", "Lena", "Marcus"]) ps.push(await cityReady(t, n));
+    for (const p of ps) await t.req("POST", `/city/events/${id}/signup`, { token: p.token, json: {} });
+    t.clock.advance(3.5 * 3_600_000);
+    const table = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event.table;
+    await t.req("POST", `/city/tables/${table.id}/leave`, { token: ps[0]!.token });
+    const after = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event;
+    expect(after.table).toBeNull();
+    expect((await t.req("GET", `/nights/${table.nightId}`, { token: ps[0]!.token })).status).toBe(404);
+    expect(
+      (
+        await t.req("POST", `/city/events/${id}/keep-in-touch`, {
+          token: ps[0]!.token,
+          json: { userId: ps[1]!.id, yes: true },
+        })
+      ).status,
+    ).toBe(403);
+    const mates = (await t.req("GET", `/city/events/${id}`, { token: ps[1]!.token })).body.event.table.people;
+    expect(mates.map((m: { id: string }) => m.id)).not.toContain(ps[0]!.id);
+  });
+});

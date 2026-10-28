@@ -46,7 +46,10 @@ export function loadConfig(
   const r2Key = need("R2_ACCESS_KEY_ID");
   const r2Secret = need("R2_SECRET_ACCESS_KEY");
   const wantsProd = env.NIGHTCAP_MODE === "prod";
-  const mode: Config["mode"] = wantsProd && missing.length === 0 ? "prod" : "mock";
+  // Fail closed (code review #5): asking for prod with a key missing must never fall back to
+  // mock mode (which mounts /dev, including log-in-as-anyone).
+  if (wantsProd && missing.length) throw new Error(`NIGHTCAP_MODE=prod but missing: ${missing.join(", ")}`);
+  const mode: Config["mode"] = wantsProd ? "prod" : "mock";
   const devSecret = env.DEV_JWT_SECRET || null;
   const jwtSecret = mode === "prod" ? supabaseSecret! : (devSecret ?? randomSecret());
   const resolveDir = (p: string) => (p.startsWith("/") ? p : join(REPO_ROOT, p));

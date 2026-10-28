@@ -10,6 +10,7 @@ import {
 } from "@nightcap/core";
 import { asUser } from "@nightcap/db";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
 import type { AppEnv, Deps } from "../deps";
 import { body, fail, param } from "../http";
@@ -182,6 +183,15 @@ export async function takeShot(deps: Deps, userId: string, nightId: string, raw:
   if (n!.kind === "moment") await advance(deps, nightId); // last one in → reveal
   return { id, shotsLeft: can.ok ? can.value : 0 };
 }
+
+// Reject oversized uploads while streaming, before buffering them (code review #13).
+nights.use(
+  "/:id/shots",
+  bodyLimit({
+    maxSize: MAX_UPLOAD_BYTES + 64 * 1024,
+    onError: (c) => c.json({ error: "too_large", message: "That photo is too big (12 MB max)." }, 413),
+  }),
+);
 
 nights.post("/:id/shots", async (c) => {
   const deps = c.get("deps");

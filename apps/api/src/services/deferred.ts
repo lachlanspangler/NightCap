@@ -13,6 +13,15 @@ export async function executeDeferred(
     await asUser(deps.db, userId, (tx) =>
       tx.query(`delete from crew_members where crew_id = $1 and user_id = $2`, [payload.crewId, target]),
     );
+    // A crew is never left without an owner (code review #10): hand it to the longest-standing member.
+    await asService(deps.db, (tx) =>
+      tx.query(
+        `update crew_members set role = 'owner' where crew_id = $1 and user_id = (
+           select user_id from crew_members where crew_id = $1 order by joined_at, user_id limit 1)
+         and not exists (select 1 from crew_members where crew_id = $1 and role = 'owner')`,
+        [payload.crewId],
+      ),
+    );
     return;
   }
   if (action === "delete_account") {

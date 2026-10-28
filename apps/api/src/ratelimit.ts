@@ -24,7 +24,8 @@ export function rateLimit(opts: {
     }
     b.tokens -= 1;
     buckets.set(k, b);
-    if (buckets.size > 10_000) buckets.clear();
+    // Evict the oldest buckets instead of resetting everyone (code review #12).
+    if (buckets.size > 10_000) for (const k of [...buckets.keys()].slice(0, 1_000)) buckets.delete(k);
     return next();
   };
 }

@@ -49,7 +49,7 @@ export const toState = (n: NightRow): NightState => ({
 });
 
 async function loadForAdvance(tx: Queryable, nightId: string) {
-  const n = (await tx.query<NightRow>(`select * from nights where id = $1`, [nightId])).rows[0];
+  const n = (await tx.query<NightRow>(`select * from nights where id = $1 for update`, [nightId])).rows[0];
   if (!n) return null;
   const members = (
     await tx.query<{ user_id: string; ready_at: Date | null; shots: number }>(
@@ -212,8 +212,9 @@ export async function nightView(deps: Deps, viewerId: string, nightId: string): 
         hidden: boolean;
       }>(
         `select id, author_id, taken_at, status, width, height, shot_hidden_from_others(id) as hidden
-         from shots where night_id = $1 and status <> 'deleted' order by taken_at, id`,
-        [nightId],
+         from shots where night_id = $1 and status <> 'deleted' and not ($2 and status = 'discarded')
+         order by taken_at, id`,
+        [nightId, n.unlocked_at !== null],
       )
     ).rows;
     const ids = shots.map((s) => s.id);

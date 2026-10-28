@@ -122,6 +122,7 @@ export function dbErrorCode(e: unknown): string | null {
   if (err?.code === "P0001" && err.message) return err.message;
   if (err?.code === "42501") return "forbidden"; // insufficient_privilege / RLS with check
   if (err?.code === "23505") return "conflict";
+  if (err?.code === "23503") return "not_found"; // FK target missing: same as "doesn't exist"
   if (err?.code === "23514" || err?.code === "22P02" || err?.code === "22007" || err?.code === "22008")
     return "invalid";
   if (/row-level security/i.test(err?.message ?? "")) return "forbidden";

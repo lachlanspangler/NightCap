@@ -14,6 +14,8 @@ export interface VisibilityCase {
   hiddenBy?: ("maya" | "theo" | "jules" | "sam")[];
   /** A hider who has since deleted their account (sticky flag). */
   subjectHidden?: boolean;
+  /** Viewers who reported it (a non-hiding reason, e.g. harassment). */
+  reportedBy?: ("maya" | "theo" | "jules" | "sam")[];
   /** [blocker, blocked] */
   blocks?: [string, string][];
   expected: boolean;
@@ -209,6 +211,27 @@ export const VISIBILITY_CASES: VisibilityCase[] = [
     phase: "unlocked",
     participants: all,
     subjectHidden: true,
+    expected: true,
+  },
+
+  {
+    name: "a reporter never sees the shot they reported",
+    author: "maya",
+    viewer: "theo",
+    status: "kept",
+    phase: "unlocked",
+    participants: all,
+    reportedBy: ["theo"],
+    expected: false,
+  },
+  {
+    name: "someone else's (non-hiding) report doesn't hide it from you",
+    author: "maya",
+    viewer: "jules",
+    status: "kept",
+    phase: "unlocked",
+    participants: all,
+    reportedBy: ["theo"],
     expected: true,
   },
 ];

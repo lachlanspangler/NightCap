@@ -1,5 +1,5 @@
 // Dev-only routes (ADR 0005). Mounted ONLY in mock mode; app.test asserts they 404 otherwise.
-import { checkAge, localParts, nextLocalTime, phaseOf } from "@nightcap/core";
+import { checkAge, isValidTimeZone, localParts, nextLocalTime, phaseOf } from "@nightcap/core";
 import { asService, asUser, makeUser } from "@nightcap/db";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -39,7 +39,7 @@ dev.post("/signup", async (c) => {
     z.object({
       name: z.string().trim().min(1).max(30),
       birthdate: z.string(),
-      tz: z.string().max(64).default("America/Chicago"),
+      tz: z.string().max(64).refine(isValidTimeZone, "unknown time zone").default("America/Chicago"),
     }),
   );
   const age = checkAge(p.birthdate, deps.clock.now(), p.tz);
@@ -72,7 +72,7 @@ dev.post("/clock", async (c) => {
     z.object({
       jump: z.enum(["morning", "unlock", "reset", "hour"]).optional(),
       offsetMs: z.number().optional(),
-      tz: z.string().default("America/Chicago"),
+      tz: z.string().refine(isValidTimeZone, "unknown time zone").default("America/Chicago"),
     }),
   );
   if (!deps.devClock) fail(501, "not_configured");

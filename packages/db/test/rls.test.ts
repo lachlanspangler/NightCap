@@ -269,7 +269,7 @@ describe("shots", () => {
   it("the roll is enforced in the database", async () => {
     await insert(maya, live);
     await insert(maya, live);
-    expect(await code(insert(maya, live))).toBe("forbidden");
+    expect(await code(insert(maya, live))).toBe("roll_full") // the locked trigger (0009) answers before RLS;
     expect(await code(insert(theo, live))).toBe("ok");
   });
   it("no shots after the night ends", async () => {

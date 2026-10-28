@@ -32,7 +32,11 @@ export function createApp(deps: Deps) {
       name: "ip",
       capacity: 300,
       refillPerSec: 5,
-      key: (c) => c.req.header("x-forwarded-for") ?? "local",
+      // Only trust X-Forwarded-For behind a known proxy (code review #12).
+      key: (c) =>
+        process.env.TRUST_PROXY === "1"
+          ? (c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "direct")
+          : "direct",
     }),
   );
 

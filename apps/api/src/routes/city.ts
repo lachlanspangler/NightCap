@@ -417,12 +417,19 @@ city.get("/connections", async (c) => {
 city.post("/tables/:id/leave", async (c) => {
   const deps = c.get("deps");
   const userId = c.get("userId");
-  await asService(deps.db, (tx) =>
-    tx.query(`update city_table_members set left_at = $3 where table_id = $1 and user_id = $2`, [
-      param(c, "id"),
-      userId,
-      deps.clock.now(),
-    ]),
-  );
+  // Leaving revokes everything (code review #6): the seat, the names, and the table's roll.
+  const tableId = param(c, "id");
+  await asService(deps.db, async (tx) => {
+    const t = (
+      await tx.query<{ night_id: string | null }>(
+        `select t.night_id from city_tables t join city_table_members m on m.table_id = t.id where t.id = $1 and m.user_id = $2`,
+        [tableId, userId],
+      )
+    ).rows[0];
+    if (!t) return;
+    await tx.query(`delete from city_table_members where table_id = $1 and user_id = $2`, [tableId, userId]);
+    if (t.night_id)
+      await tx.query(`delete from night_members where night_id = $1 and user_id = $2`, [t.night_id, userId]);
+  });
   return c.json({ ok: true });
 });

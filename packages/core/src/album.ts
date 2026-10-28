@@ -13,6 +13,8 @@ export interface ShotFacts {
   hiddenBy: readonly string[];
   /** Sticky hide left by a subject whose account is gone (migration 0005). */
   subjectHidden?: boolean;
+  /** People who reported it: a report always hides the shot from the reporter (ADR 0004). */
+  reportedBy?: readonly string[];
 }
 
 /** Blocks as "blocker:blocked" keys. Blocks are mutual invisibility, so we check both directions. */
@@ -47,6 +49,7 @@ export function shotVisibility(shot: ShotFacts, ctx: ViewerContext): ShotVisibil
   if (ctx.phase !== "unlocked") return "locked";
   if (shot.status === "discarded") return "discarded";
   if (shot.hiddenBy.length > 0 || shot.subjectHidden) return "hidden";
+  if (shot.reportedBy?.includes(ctx.viewerId)) return "hidden";
   if (blockedEitherWay(ctx.blocks, ctx.viewerId, shot.authorId)) return "blocked";
   return "visible";
 }
