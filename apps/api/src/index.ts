@@ -10,7 +10,7 @@ import { createApp } from "./app";
 import { loadConfig, REPO_ROOT } from "./config";
 import type { Deps } from "./deps";
 import { LocalDiskStore, R2Store } from "./media/store";
-import { advanceDue } from "./services/nights";
+import { tick } from "./services/tick";
 import { isSeeded, seedDemo } from "./services/seed";
 
 const log = (m: string) => console.log(`[nightcap-api] ${new Date().toISOString().slice(11, 19)} ${m}`);
@@ -59,7 +59,8 @@ async function main() {
   if (!(await isSeeded(deps))) await seedDemo(deps);
 
   const app = createApp(deps);
-  const ticker = setInterval(() => void advanceDue(deps).catch((e) => log(`ticker: ${e}`)), 30_000);
+  const ticker = setInterval(() => void tick(deps).catch((e) => log(`ticker: ${e}`)), 30_000);
+  void tick(deps);
   // Bind to loopback only (builder-security: private by default). The simulator reaches it via 127.0.0.1.
   const server = serve(
     { fetch: app.fetch, port: config.port, hostname: process.env.API_HOST ?? "127.0.0.1" },

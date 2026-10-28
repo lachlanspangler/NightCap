@@ -6,7 +6,8 @@ import { z } from "zod";
 import { mintToken } from "../auth";
 import type { AppEnv } from "../deps";
 import { body, fail, MESSAGES, param } from "../http";
-import { advance, advanceDue, type NightRow } from "../services/nights";
+import { advance, type NightRow } from "../services/nights";
+import { tick } from "../services/tick";
 import { DEMO_USERS, isSeeded, seedDemo, wipeDemo } from "../services/seed";
 import { takeShot } from "./nights";
 
@@ -88,7 +89,7 @@ dev.post("/clock", async (c) => {
     );
     deps.devClock!.setOffset(target.getTime() + 1000 - base);
   } else if (p.offsetMs !== undefined) deps.devClock!.setOffset(p.offsetMs);
-  const changed = await advanceDue(deps);
+  const changed = await tick(deps);
   return c.json({
     now: deps.clock.now().toISOString(),
     offsetMs: deps.devClock!.offsetMs,

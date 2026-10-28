@@ -109,7 +109,27 @@ function seat(
     else tables[best]!.push(b);
   }
 
-  // Tables under min: try to move their blocks elsewhere; otherwise waitlist them.
+  // Tables under min: first borrow compatible blocks from tables that can spare them (choosing the
+  // move that keeps both tables' gender mix best)…
+  for (const t of tables) {
+    while (t.length > 0 && people(t).length < opts.min) {
+      let pick: { donor: SignupBlock[]; idx: number; score: number } | null = null;
+      for (const donor of tables) {
+        if (donor === t) continue;
+        donor.forEach((b, idx) => {
+          if (people(donor).length - b.members.length < opts.min) return;
+          if (people(t).length + b.members.length > opts.max || conflicts(t, b)) return;
+          const rest = donor.filter((_, k) => k !== idx);
+          const score = genderCost([...people(t), ...b.members]) + genderCost(people(rest));
+          if (!pick || score < pick.score) pick = { donor, idx, score };
+        });
+      }
+      if (!pick) break;
+      const chosen: { donor: SignupBlock[]; idx: number } = pick;
+      t.push(chosen.donor.splice(chosen.idx, 1)[0]!);
+    }
+  }
+  // …then move what's left of any still-small table elsewhere, or waitlist it.
   for (let i = tables.length - 1; i >= 0; i--) {
     const t = tables[i]!;
     if (people(t).length >= opts.min || t.length === 0) continue;

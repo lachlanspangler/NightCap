@@ -146,3 +146,30 @@ describe("formTables with blocks", () => {
     for (const t of r.tables) expect(t.userIds.includes("a") && t.userIds.includes("b")).toBe(false);
   });
 });
+
+describe("formTables properties (seeded fuzz)", () => {
+  // Small LCG so the "random" ids are the same every run.
+  const lcg = (seed: number) => () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  it("with one blocked pair and enough people for two tables, nobody is waitlisted", () => {
+    const rnd = lcg(42);
+    for (let k = 0; k < 3000; k++) {
+      const n = 4 + Math.floor(rnd() * 9); // 4–12 people
+      const ids = Array.from({ length: n }, () =>
+        Math.floor(rnd() * 2 ** 32)
+          .toString(16)
+          .padStart(8, "0"),
+      );
+      const blocks = ids.map((id) => ({
+        blockId: id,
+        members: [{ userId: id, gender: "unspecified" as Gender }],
+      }));
+      const r = formTables(blocks, { min: 2, max: 4 }, pairSet([[ids[0]!, ids[1]!]]));
+      expect(r.waitlist).toEqual([]);
+      for (const t of r.tables) {
+        expect(t.userIds.length).toBeGreaterThanOrEqual(2);
+        expect(t.userIds.length).toBeLessThanOrEqual(4);
+        expect(t.userIds.includes(ids[0]!) && t.userIds.includes(ids[1]!)).toBe(false);
+      }
+    }
+  });
+});

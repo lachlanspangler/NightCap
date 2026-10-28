@@ -1,6 +1,10 @@
 import {
   computeNightSchedule,
   deferUntil,
+  describeMonth,
+  localParts,
+  monthInReview,
+  onThisNight,
   describeMoment,
   generateNightCode,
   inviteExpiry,
@@ -22,6 +26,7 @@ import { signMediaPath } from "../media/sign";
 import { advance, nightView } from "../services/nights";
 import { loadMe, nightModeFor, sha256 } from "../services/util";
 import { executeDeferred } from "../services/deferred";
+import { ensureMoment, runNudges } from "../services/moments";
 
 export const crews = new Hono<AppEnv>();
 
@@ -417,4 +422,122 @@ crews.post("/:id/nights", async (c) => {
   }
   if (!nightId) fail(503, "busy", "Couldn't find a free night code. Try again.");
   return c.json({ night: await nightView(deps, userId, nightId!) }, 201);
+});
+
+/** The weekly Nightcap for this crew: the open window's night (created lazily), or the next window. */
+crews.get("/:id/moment", async (c) => {
+  const deps = c.get("deps");
+  const userId = c.get("userId");
+  const id = param(c, "id");
+  const visible = await asUser(
+    deps.db,
+    userId,
+    async (tx) => (await tx.query(`select 1 from crews where id = $1`, [id])).rows.length > 0,
+  );
+  if (!visible) fail(404, "not_found");
+  const m = await ensureMoment(deps, id);
+  await runNudges(deps, id);
+  const open = m!.openNightId ? await nightView(deps, userId, m!.openNightId) : null;
+  const last = m!.lastNightId ? await nightView(deps, userId, m!.lastNightId) : null;
+  return c.json({
+    window: {
+      opensAt: m!.window.opensAt.toISOString(),
+      closesAt: m!.window.closesAt.toISOString(),
+      isOpen: m!.window.isOpen,
+    },
+    open,
+    last: last && last.id !== open?.id ? last : null,
+  });
+});
+
+/** Recaps: "On this night" (years ago) and month in review. Only nights you were in, shots you can see. */
+crews.get("/:id/recaps", async (c) => {
+  const deps = c.get("deps");
+  const userId = c.get("userId");
+  const id = param(c, "id");
+  const now = deps.clock.now();
+  const nowSec = Math.floor(now.getTime() / 1000);
+  const me = await loadMe(deps, userId);
+  const tz = me?.tz ?? "America/Chicago";
+  const data = await asUser(deps.db, userId, async (tx) => {
+    const crew = (await tx.query<{ name: string }>(`select name from crews where id = $1`, [id])).rows[0];
+    if (!crew) return null;
+    const nights = (
+      await tx.query<{
+        id: string;
+        title: string | null;
+        started_at: Date;
+        tz: string;
+        unlocked_at: Date | null;
+        city: string | null;
+        kind: string;
+      }>(
+        `select n.id, n.title, n.started_at, n.tz, n.unlocked_at, n.city, n.kind from nights n
+         where n.crew_id = $1 and is_participant(n.id) order by n.started_at desc`,
+        [id],
+      )
+    ).rows;
+    const ids = nights.map((n) => n.id);
+    const shots = ids.length
+      ? (
+          await tx.query<{
+            id: string;
+            night_id: string;
+            author_id: string;
+            taken_at: Date;
+            reactions: number;
+          }>(
+            `select s.id, s.night_id, s.author_id, s.taken_at, (select count(*)::int from reactions r where r.shot_id = s.id) as reactions
+           from shots s where s.night_id = any($1) and s.status in ('held','kept')`,
+            [ids],
+          )
+        ).rows
+      : [];
+    return { crew, nights, shots };
+  });
+  if (!data) fail(404, "not_found");
+  const recapNights = data!.nights
+    .filter((n) => n.kind !== "moment")
+    .map((n) => ({
+      id: n.id,
+      title: n.title,
+      startedAt: n.started_at,
+      tz: n.tz,
+      unlocked: !!n.unlocked_at,
+      city: n.city,
+    }));
+  const recapShots = data!.shots.map((s) => ({
+    id: s.id,
+    nightId: s.night_id,
+    authorId: s.author_id,
+    takenAt: s.taken_at,
+    reactions: s.reactions,
+  }));
+  const cover = (nightId: string) => {
+    const s = recapShots.filter((x) => x.nightId === nightId).sort((a, b) => b.reactions - a.reactions)[0];
+    return s ? signMediaPath(deps.config.mediaSecret, s.id, userId, nowSec) : null;
+  };
+  const otn = onThisNight(recapNights, now, tz).map((x) => ({
+    nightId: x.night.id,
+    title: x.night.title,
+    yearsAgo: x.yearsAgo,
+    startedAt: x.night.startedAt.toISOString(),
+    coverUrl: cover(x.night.id),
+  }));
+  const local = localParts(now, tz);
+  const prev =
+    local.month === 1 ? { year: local.year - 1, month: 12 } : { year: local.year, month: local.month - 1 };
+  const month = (y: number, m: number) => {
+    const r = monthInReview(recapNights, recapShots, y, m, tz);
+    return {
+      ...r,
+      label: describeMonth(r, data!.crew.name),
+      topShotUrl: r.topShotId ? signMediaPath(deps.config.mediaSecret, r.topShotId, userId, nowSec) : null,
+    };
+  };
+  return c.json({
+    onThisNight: otn,
+    thisMonth: month(local.year, local.month),
+    lastMonth: month(prev.year, prev.month),
+  });
 });
