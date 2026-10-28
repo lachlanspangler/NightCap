@@ -12,3 +12,4 @@ One file per decision: `NNNN-title.md` with Status, Context, Decision, Consequen
 | [0005](0005-auth-and-mock-mode.md)       | Auth and mock mode                           | accepted |
 | [0006](0006-media-pipeline.md)           | Media pipeline: EXIF strip, signed URLs      | accepted |
 | [0007](0007-expo-go-on-our-simulator.md) | Verify on our own simulator via Expo Go      | accepted |
+| [0008](0008-visual-identity.md) | Visual identity: darkroom at night, sunrise in the morning | accepted |

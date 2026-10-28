@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "NightCap",
+    "slug": "nightcap",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "nightcap",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "backgroundColor": "#0C0A14",
+    "splash": { "backgroundColor": "#0C0A14", "resizeMode": "contain" },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.lachlanspangler.nightcap",
+      "infoPlist": {
+        "NSCameraUsageDescription": "NightCap uses the camera so you can snap photos into tonight's shared roll.",
+        "NSPhotoLibraryAddUsageDescription": "NightCap saves last night's album to your photos when you tap Save all.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": ["applinks:nightcap.app"]
+    },
+    "android": {
+      "package": "com.lachlanspangler.nightcap",
+      "edgeToEdgeEnabled": true,
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "NightCap uses the camera so you can snap photos into tonight's shared roll.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "NightCap saves last night's album to your photos when you tap Save all.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": { "typedRoutes": false }
+  }
+}

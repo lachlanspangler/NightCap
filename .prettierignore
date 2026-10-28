@@ -8,3 +8,4 @@ docs/ideas_ledger.json
 package-lock.json
 apps/mobile/ios
 apps/mobile/android
+apps/mobile/node_modules
