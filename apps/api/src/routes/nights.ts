@@ -1,6 +1,8 @@
+import { createHash } from "node:crypto";
 import {
   canMarkReady,
   canShoot,
+  generateNightCode,
   inviteExpiry,
   inviteLinks,
   inviteTokenFromBytes,
@@ -8,7 +10,7 @@ import {
   normalizeCode,
   phaseOf,
 } from "@nightcap/core";
-import { asUser } from "@nightcap/db";
+import { asService, asUser, dbErrorCode } from "@nightcap/db";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
@@ -100,13 +102,66 @@ nights.post("/:id/invites", async (c) => {
   const token = inviteTokenFromBytes(deps.random.bytes(INVITE_TOKEN_BYTES));
   const now = deps.clock.now();
   const expiresAt = inviteExpiry("night", now, n!.auto_end_at);
-  await asUser(deps.db, userId, (tx) =>
-    tx.query(`select create_invite('night', $1, $2, $3, null, $4)`, [id, sha256(token), expiresAt, now]),
+  const inviteId = await asUser(
+    deps.db,
+    userId,
+    async (tx) =>
+      (
+        await tx.query<{ id: string }>(`select create_invite('night', $1, $2, $3, 10, $4) as id`, [
+          id,
+          sha256(token),
+          expiresAt,
+          now,
+        ])
+      ).rows[0]!.id,
   );
   return c.json(
-    { token, links: inviteLinks(token), code: n!.join_code, expiresAt: expiresAt.toISOString() },
+    {
+      id: inviteId,
+      token,
+      links: inviteLinks(token),
+      code: n!.join_code,
+      maxUses: 10,
+      expiresAt: expiresAt.toISOString(),
+    },
     201,
   );
+});
+
+/** Hosts remove anyone, instantly: a safety action, never deferred (privacy review C1). */
+nights.delete("/:id/members/:userId", async (c) => {
+  const deps = c.get("deps");
+  const userId = c.get("userId");
+  const id = param(c, "id");
+  const target = param(c, "userId");
+  await asUser(deps.db, userId, (tx) =>
+    tx.query(`select remove_from_night($1, $2, $3)`, [id, target, deps.clock.now()]),
+  );
+  return c.json({ night: await nightView(deps, userId, id) });
+});
+
+/** New code + every night link revoked (H2): for when the code got around. */
+nights.post("/:id/code/rotate", async (c) => {
+  const deps = c.get("deps");
+  const userId = c.get("userId");
+  const id = param(c, "id");
+  let done = false;
+  for (let attempt = 0; attempt < 40 && !done; attempt++) {
+    try {
+      await asUser(deps.db, userId, (tx) =>
+        tx.query(`select rotate_night_code($1, $2, $3)`, [
+          id,
+          generateNightCode(deps.random.float),
+          deps.clock.now(),
+        ]),
+      );
+      done = true;
+    } catch (e) {
+      if (dbErrorCode(e) !== "conflict") throw e;
+    }
+  }
+  if (!done) fail(503, "busy", "Couldn't find a free code. Try again.");
+  return c.json({ night: await nightView(deps, userId, id) });
 });
 
 nights.post("/:id/end", async (c) => {
@@ -172,13 +227,22 @@ export async function takeShot(deps: Deps, userId: string, nightId: string, raw:
     throw e;
   }
   const size = imageSize(clean!.bytes, clean!.mime);
+  // Media already reported as nudity / under-18 can't be shared again (exact-hash denylist;
+  // perceptual hashing / PhotoDNA / StopNCII is a production TODO).
+  const contentHash = createHash("sha256").update(clean!.bytes).digest("hex");
+  const denied = await asService(
+    deps.db,
+    async (tx) =>
+      (await tx.query(`select 1 from blocked_hashes where content_hash = $1`, [contentHash])).rows.length > 0,
+  );
+  if (denied) fail(422, "blocked_media", "This photo can't be shared on NightCap.");
   const id = deps.random.uuid();
   const key = `shots/${nightId}/${id}.${clean!.mime === "image/png" ? "png" : "jpg"}`;
   await deps.media.put(key, clean!.bytes, clean!.mime);
   try {
     await asUser(deps.db, userId, (tx) =>
       tx.query(
-        `insert into shots (id, night_id, author_id, media_key, mime, width, height, bytes, taken_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `insert into shots (id, night_id, author_id, media_key, mime, width, height, bytes, taken_at, content_hash) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           id,
           nightId,
@@ -189,6 +253,7 @@ export async function takeShot(deps: Deps, userId: string, nightId: string, raw:
           size?.height ?? null,
           clean!.bytes.length,
           deps.clock.now(),
+          contentHash,
         ],
       ),
     );

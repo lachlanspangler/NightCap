@@ -155,6 +155,7 @@ export interface NightDto {
     isParticipant: boolean;
     ready: boolean;
     canEnd: boolean;
+    isHost: boolean;
     shotsTaken: number;
     shotsLeft: number;
     canMarkReady: boolean;
@@ -250,12 +251,14 @@ export async function nightView(deps: Deps, viewerId: string, nightId: string): 
       id: n.id,
       kind: n.kind,
       crew,
-      title: n.title,
-      venue: n.venue_label,
+      // People not in the night (e.g. a crewmate who stayed home) don't learn where it is or who
+      // started it (privacy review H1).
+      title: isParticipant ? n.title : null,
+      venue: isParticipant ? n.venue_label : null,
       tz: n.tz,
       phase,
       startedAt: n.started_at.toISOString(),
-      startedBy: n.started_by,
+      startedBy: isParticipant ? n.started_by : null,
       autoEndAt: n.auto_end_at.toISOString(),
       unlockAt: n.unlock_at.toISOString(),
       earliestUnlockAt: n.earliest_unlock_at.toISOString(),
@@ -264,12 +267,17 @@ export async function nightView(deps: Deps, viewerId: string, nightId: string): 
       unlockReason: n.unlock_reason,
       unlockAtLabel: formatLocalTime(n.unlock_at, n.tz),
       earliestUnlockLabel: formatLocalTime(n.earliest_unlock_at, n.tz),
-      code: isParticipant && phase === "live" ? n.join_code : null,
+      // Guests don't get the code to pass on; only the host and crew members do (H2).
+      code:
+        isParticipant && phase === "live" && (role !== null || n.started_by === viewerId)
+          ? n.join_code
+          : null,
       rollSize: n.roll_size,
       me: {
         isParticipant,
         ready: me?.ready ?? false,
         canEnd: phase === "live" && (n.started_by === viewerId || role === "owner"),
+        isHost: n.started_by === viewerId || role === "owner",
         shotsTaken: myTaken,
         shotsLeft: shotsLeft(n.roll_size, myTaken),
         canMarkReady: isParticipant && ready.ok,

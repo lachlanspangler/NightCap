@@ -649,3 +649,30 @@ describe("join codes are not an oracle (code review #4)", () => {
     expect(n.rows[0]).toEqual({ n: 2 });
   });
 });
+
+describe("host-only RPCs refuse guests (NULL-safe, privacy review fix)", () => {
+  it("a guest can't remove people, rotate the code, or mint night links", async () => {
+    const live = await makeNight(db, { crewId: crew, startedBy: maya, participants: [maya, stranger] });
+    expect(
+      await code(as(stranger, (tx) => tx.query(`select remove_from_night($1, $2, $3)`, [live, maya, NOW]))),
+    ).toBe("not_allowed");
+    expect(
+      await code(as(stranger, (tx) => tx.query(`select rotate_night_code($1, '9999', $2)`, [live, NOW]))),
+    ).toBe("not_allowed");
+    expect(
+      await code(
+        as(stranger, (tx) =>
+          tx.query(`select create_invite('night', $1, $2, $3, 10, $4)`, [
+            live,
+            "a".repeat(64),
+            new Date(NOW.getTime() + 3_600_000),
+            NOW,
+          ]),
+        ),
+      ),
+    ).toBe("not_allowed");
+    expect(
+      await code(as(maya, (tx) => tx.query(`select remove_from_night($1, $2, $3)`, [live, stranger, NOW]))),
+    ).toBe("ok");
+  });
+});

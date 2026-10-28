@@ -84,7 +84,21 @@ export function stripJpeg(bytes: Uint8Array): Uint8Array {
   return res;
 }
 
-const PNG_DROP = new Set(["tEXt", "zTXt", "iTXt", "eXIf", "tIME"]);
+// Allowlist (privacy review L2): only chunks needed to render the image survive. Text, eXIf,
+// tIME, C2PA (caBX) and any private/vendor chunk are dropped.
+const PNG_KEEP = new Set([
+  "IHDR",
+  "PLTE",
+  "IDAT",
+  "IEND",
+  "tRNS",
+  "gAMA",
+  "cHRM",
+  "sRGB",
+  "iCCP",
+  "sBIT",
+  "pHYs",
+]);
 
 export function stripPng(bytes: Uint8Array): Uint8Array {
   if (sniffMime(bytes) !== "image/png") throw new ImageError("not a png");
@@ -95,7 +109,7 @@ export function stripPng(bytes: Uint8Array): Uint8Array {
     const type = String.fromCharCode(bytes[i + 4]!, bytes[i + 5]!, bytes[i + 6]!, bytes[i + 7]!);
     const end = i + 12 + len;
     if (end > bytes.length) throw new ImageError("truncated chunk");
-    if (!PNG_DROP.has(type)) out.push(bytes.subarray(i, end));
+    if (PNG_KEEP.has(type)) out.push(bytes.subarray(i, end));
     i = end;
     if (type === "IEND") break;
   }

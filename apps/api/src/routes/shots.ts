@@ -1,4 +1,12 @@
-import { canReviewShot, createTag, isReaction, phaseOf, REPORT_REASONS, respondToTag } from "@nightcap/core";
+import {
+  AUTO_HIDE_REASONS,
+  canReviewShot,
+  createTag,
+  isReaction,
+  phaseOf,
+  REPORT_REASONS,
+  respondToTag,
+} from "@nightcap/core";
 import { asService, asUser, type Queryable } from "@nightcap/db";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -59,13 +67,20 @@ shots.delete("/:id", async (c) => {
   const deps = c.get("deps");
   const userId = c.get("userId");
   const id = param(c, "id");
-  const key = await asUser(deps.db, userId, async (tx) => {
+  const r = await asUser(deps.db, userId, async (tx) => {
     const s = await shotFacts(tx, id);
     if (!s || s.author_id !== userId) fail(404, "not_found");
-    await tx.query(`update shots set status = 'deleted' where id = $1`, [id]);
-    return s!.media_key;
+    const held = (
+      await tx.query<{ evidence_hold: boolean }>(
+        `update shots set status = 'deleted' where id = $1 returning evidence_hold`,
+        [id],
+      )
+    ).rows[0]!.evidence_hold;
+    return { key: s!.media_key, held };
   });
-  await deps.media.delete(key).catch(() => undefined);
+  // A shot reported as nudity / under-18 is evidence (privacy review C2): it disappears for everyone,
+  // but the media is preserved for review instead of being destroyed.
+  if (!r.held) await deps.media.delete(r.key).catch(() => undefined);
   return c.json({ ok: true });
 });
 
@@ -102,6 +117,7 @@ shots.post("/:id/tags", async (c) => {
   const userId = c.get("userId");
   const id = param(c, "id");
   const { userId: subjectId } = await body(c, z.object({ userId: z.string().uuid() }));
+  let created = false;
   // The tagger can't see a tag the subject removed (RLS), so check existence server-side.
   const existing = await asService(
     deps.db,
@@ -134,12 +150,25 @@ shots.post("/:id/tags", async (c) => {
         ? { shotId: id, subjectId, taggerId: userId, status: existing as "pending" }
         : undefined,
     });
-    if (!r.ok) fail(r.error === "already_tagged" || r.error === "subject_removed" ? 409 : 403, r.error);
+    // Already tagged / the subject untagged: a quiet no-op. Telling the tagger would reveal the
+    // subject's private decision (privacy review M4).
+    if (!r.ok && (r.error === "already_tagged" || r.error === "subject_removed")) return;
+    if (!r.ok) fail(403, r.error);
     await tx.query(
       `insert into shot_tags (shot_id, subject_id, tagger_id, status, created_at, updated_at) values ($1, $2, $3, $4, $5, $5)`,
       [id, subjectId, userId, r.ok ? r.value : "pending", deps.clock.now()],
     );
+    created = r.ok && r.value === "pending";
   });
+  if (created) {
+    // The subject hears about it right away, and (before the unlock) can preview and veto it (H4).
+    await asService(deps.db, (tx) =>
+      tx.query(
+        `insert into notifications (user_id, kind, payload, created_at) values ($1, 'tagged', $2, $3)`,
+        [subjectId, JSON.stringify({ shot_id: id, by: userId }), deps.clock.now()],
+      ),
+    );
+  }
   return c.json({ ok: true }, 201);
 });
 
@@ -202,5 +231,5 @@ shots.post("/:id/report", async (c) => {
   await asUser(deps.db, userId, (tx) =>
     tx.query(`select report_shot($1, $2, $3, $4)`, [id, p.reason, p.note ?? null, deps.clock.now()]),
   );
-  return c.json({ ok: true, hidden: ["in_photo", "nudity", "minor"].includes(p.reason) }, 201);
+  return c.json({ ok: true, hidden: AUTO_HIDE_REASONS.has(p.reason) }, 201);
 });

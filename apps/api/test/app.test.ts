@@ -358,10 +358,14 @@ describe("consent & safety through the API", () => {
       (await t.req("GET", `/nights/${night.id}`, { token: jules.token })).body.night.shots[0].tags,
     ).toEqual([{ userId: theo.id, status: "approved" }]);
     await t.req("PATCH", `/shots/${shot.id}/tags/me`, { token: theo.token, json: { status: "removed" } });
+    // Re-tagging is a quiet no-op: the tagger isn't told the subject untagged (privacy review M4).
     expect(
-      (await t.req("POST", `/shots/${shot.id}/tags`, { token: jules.token, json: { userId: theo.id } })).body
-        .error,
-    ).toBe("subject_removed");
+      (await t.req("POST", `/shots/${shot.id}/tags`, { token: jules.token, json: { userId: theo.id } }))
+        .status,
+    ).toBe(201);
+    expect(
+      (await t.req("GET", `/nights/${night.id}`, { token: jules.token })).body.night.shots[0].tags,
+    ).toEqual([]);
   });
 
   it("blocks are mutual invisibility and never deferred", async () => {

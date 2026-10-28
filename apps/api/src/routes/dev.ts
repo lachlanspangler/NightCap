@@ -198,3 +198,40 @@ dev.post("/reseed", async (c) => {
   const r = await seedDemo(deps);
   return c.json({ ok: true, ...r });
 });
+
+/**
+ * The moderation queue, mock mode only (privacy review C2). In production this is a moderator
+ * tool with SLAs, under_18 escalation (NCMEC) and NCII hash-sharing; see STATUS.
+ */
+dev.get("/reports", async (c) => {
+  const deps = c.get("deps");
+  const rows = await asService(
+    deps.db,
+    async (tx) =>
+      (
+        await tx.query<{
+          id: string;
+          reason: string;
+          status: string;
+          created_at: Date;
+          shot_id: string | null;
+          reported_user_snapshot: string | null;
+          evidence: boolean | null;
+        }>(
+          `select r.id, r.reason, r.status, r.created_at, r.shot_id, r.reported_user_snapshot, s.evidence_hold as evidence
+       from reports r left join shots s on s.id = r.shot_id where r.status = 'open' order by r.created_at desc limit 100`,
+        )
+      ).rows,
+  );
+  return c.json({
+    reports: rows.map((r) => ({
+      id: r.id,
+      reason: r.reason,
+      status: r.status,
+      createdAt: r.created_at.toISOString(),
+      shotId: r.shot_id,
+      reportedUser: r.reported_user_snapshot,
+      evidenceHeld: !!r.evidence,
+    })),
+  });
+});

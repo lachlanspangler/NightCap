@@ -46,11 +46,13 @@ export type SensitiveAction =
   | "hide_shot"
   | "delete_shot";
 
-/** Irreversible-and-social actions wait for the morning. Safety actions never wait. */
+/**
+ * Irreversible-and-social actions wait for the morning. Safety actions never wait: removing a
+ * member is often removing the problem at 1am (privacy review C1), so it isn't deferred.
+ */
 const DEFERRED_AT_NIGHT: ReadonlySet<SensitiveAction> = new Set([
   "leave_crew",
   "delete_account",
-  "remove_member",
   "delete_crew",
 ]);
 

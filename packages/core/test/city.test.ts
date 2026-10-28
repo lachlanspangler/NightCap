@@ -188,3 +188,53 @@ describe("formTables never seats a blocked pair, even inside one group", () => {
     expect(r.tables.flatMap((t) => t.userIds).sort()).toEqual(["a", "b", "c", "d"]);
   });
 });
+
+describe("no woman who came alone is the only woman at a table (privacy review M3)", () => {
+  const lone = (r: ReturnType<typeof formTables>, blocks: SignupBlock[]) =>
+    r.tables.some((t) => {
+      const ws = t.userIds.filter(
+        (u) =>
+          blocks.find((b) => b.members.some((m) => m.userId === u))!.members.find((m) => m.userId === u)!
+            .gender === "woman",
+      );
+      const soloWoman =
+        ws.length === 1 &&
+        blocks.find((b) => b.members.some((m) => m.userId === ws[0]))!.members.length === 1;
+      return t.userIds.length >= 3 && soloWoman;
+    });
+  it("one woman among men is waitlisted, not seated alone", () => {
+    const blocks = [solo("w", "woman"), ...["a", "b", "c", "d", "e"].map((m) => solo(m, "man"))];
+    const r = formTables(blocks, opts, new Set());
+    expect(lone(r, blocks)).toBe(false);
+    expect(r.waitlist).toContain("w");
+  });
+  it("a woman who came with friends isn't 'alone'", () => {
+    const blocks: SignupBlock[] = [
+      {
+        blockId: "crew",
+        members: [
+          { userId: "w", gender: "woman" },
+          { userId: "m0", gender: "man" },
+        ],
+      },
+      ...["a", "b", "c"].map((m) => solo(m, "man")),
+    ];
+    expect(formTables(blocks, opts, new Set()).waitlist).toEqual([]);
+  });
+  it("seeded fuzz: never a lone solo woman", () => {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+    for (let k = 0; k < 1500; k++) {
+      const n = 4 + Math.floor(rnd() * 12);
+      const blocks = Array.from({ length: n }, (_, i) =>
+        solo(`u${k}-${i}`, rnd() < 0.4 ? "woman" : rnd() < 0.9 ? "man" : "nonbinary"),
+      );
+      const r = formTables(blocks, opts, new Set());
+      expect(lone(r, blocks)).toBe(false);
+      for (const t of r.tables) {
+        expect(t.userIds.length).toBeGreaterThanOrEqual(opts.min);
+        expect(t.userIds.length).toBeLessThanOrEqual(opts.max);
+      }
+    }
+  });
+});

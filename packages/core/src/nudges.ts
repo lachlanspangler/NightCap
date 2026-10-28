@@ -52,8 +52,12 @@ export function computeNudges(input: {
   openMoment: OpenMoment | null;
   sent: readonly SentNudge[];
   now: Date;
+  /** "a|b" pairs (sorted ids) with a block either way: never nudge one about the other (privacy M1). */
+  blockedPairs?: ReadonlySet<string>;
 }): Nudge[] {
   const { members, closedMoments, openMoment, sent, now } = input;
+  const blocked = (a: string, b: string) =>
+    input.blockedPairs?.has(a < b ? `${a}|${b}` : `${b}|${a}`) ?? false;
   const out: Nudge[] = [];
   const recentTo = (uid: string) =>
     sent.some(
@@ -76,8 +80,11 @@ export function computeNudges(input: {
       .filter((m) => lastN.every((w) => m.joinedAt < w.opensAt && !w.postedUserIds.includes(m.userId)))
       .sort((a, b) => a.userId.localeCompare(b.userId));
     for (const q of quiet) {
-      if (recentAbout(q.userId)) continue;
-      const to = active.find((a) => a.userId !== q.userId && !recentTo(a.userId));
+      // Someone who muted the crew stepped back on purpose: nobody gets nudged about them.
+      if (recentAbout(q.userId) || muted(q, now)) continue;
+      const to = active.find(
+        (a) => a.userId !== q.userId && !recentTo(a.userId) && !blocked(a.userId, q.userId),
+      );
       if (to) out.push({ toUserId: to.userId, aboutUserId: q.userId, kind: "quiet_friend" });
     }
   }

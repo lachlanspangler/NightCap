@@ -221,7 +221,11 @@ describe("leaving a City table (code review #6)", () => {
     t.clock.advance(3.5 * 3_600_000);
     const table = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event.table;
     await t.req("POST", `/nights/${table.nightId}/shots`, { token: ps[0]!.token, form: photoForm() });
-    await t.req("POST", `/city/tables/${table.id}/leave`, { token: ps[0]!.token });
+    // Photos leave too only when asked (privacy review M2: leaving is instant, photo removal deliberate).
+    await t.req("POST", `/city/tables/${table.id}/leave`, {
+      token: ps[0]!.token,
+      json: { removePhotos: true },
+    });
     const after = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event;
     expect(after.table).toBeNull();
     expect((await t.req("GET", `/nights/${table.nightId}`, { token: ps[0]!.token })).status).toBe(404);
@@ -237,7 +241,9 @@ describe("leaving a City table (code review #6)", () => {
     expect(mates.map((m: { id: string }) => m.id)).not.toContain(ps[0]!.id);
     // R2-3: their photos left with them.
     t.clock.set(new Date(t.deps.clock.now().getTime() + 30 * 3_600_000));
-    expect((await t.req("GET", `/nights/${table.nightId}`, { token: ps[1]!.token })).body.night.shots).toEqual([]);
+    expect(
+      (await t.req("GET", `/nights/${table.nightId}`, { token: ps[1]!.token })).body.night.shots,
+    ).toEqual([]);
     expect(t.media.files.size).toBe(0);
   });
 });

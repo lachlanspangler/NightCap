@@ -167,7 +167,7 @@ export default function EventScreen() {
           <Card>
             <Txt v="heading">Waitlisted this time</Txt>
             <Txt v="label" tone="textDim">
-              Not enough seats to make a full table. You&apos;re first in line next time.
+              We couldn&apos;t make a full, balanced table this time. Try another night.
             </Txt>
           </Card>
         ) : (

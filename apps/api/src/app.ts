@@ -13,6 +13,7 @@ import { me } from "./routes/me";
 import { media } from "./routes/media";
 import { nights } from "./routes/nights";
 import { blocks } from "./routes/safety";
+import { reports } from "./routes/reports";
 import { shots } from "./routes/shots";
 
 /**
@@ -88,6 +89,7 @@ export function createApp(deps: Deps) {
   authed.route("/blocks", blocks);
   authed.route("/invites", invites);
   authed.route("/city", city);
+  authed.route("/reports", reports);
   app.route("/", authed);
   return app;
 }

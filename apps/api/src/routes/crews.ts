@@ -175,8 +175,9 @@ async function crewSummary(deps: Deps, userId: string, crewIds?: string[]) {
         liveNight: live
           ? {
               id: live.id,
-              title: live.title,
-              startedBy: live.started_by,
+              // Not in it yet: no title / who started it (privacy review H1).
+              title: mine.has(live.id) ? live.title : null,
+              startedBy: mine.has(live.id) ? live.started_by : null,
               startedAt: live.started_at.toISOString(),
               joined: mine.has(live.id),
               people: counts.find((x) => x.night_id === live.id)?.people ?? 0,
@@ -326,10 +327,20 @@ crews.post("/:id/invites", async (c) => {
   const token = inviteTokenFromBytes(deps.random.bytes(INVITE_TOKEN_BYTES));
   const now = deps.clock.now();
   const expiresAt = inviteExpiry("crew", now);
-  await asUser(deps.db, c.get("userId"), (tx) =>
-    tx.query(`select create_invite('crew', $1, $2, $3, null, $4)`, [id, sha256(token), expiresAt, now]),
+  const inviteId = await asUser(
+    deps.db,
+    c.get("userId"),
+    async (tx) =>
+      (
+        await tx.query<{ id: string }>(`select create_invite('crew', $1, $2, $3, null, $4) as id`, [
+          id,
+          sha256(token),
+          expiresAt,
+          now,
+        ])
+      ).rows[0]!.id,
   );
-  return c.json({ token, links: inviteLinks(token), expiresAt: expiresAt.toISOString() }, 201);
+  return c.json({ id: inviteId, token, links: inviteLinks(token), expiresAt: expiresAt.toISOString() }, 201);
 });
 
 /** Leave (yourself) or remove (owner). Deferred to the morning in night mode (DRUNK_UX). */
@@ -349,7 +360,20 @@ crews.delete("/:id/members/:userId", async (c) => {
   if (!role) fail(404, "not_found");
   if (action === "remove_member" && role !== "owner")
     fail(403, "not_allowed", "Only the crew owner can remove people.");
-  if (shouldDefer(action, await nightModeFor(deps, me!))) {
+  // Leaving a crew where you've blocked someone is a safety action: never deferred (C1).
+  const escaping =
+    action === "leave_crew" &&
+    (await asService(
+      deps.db,
+      async (tx) =>
+        (
+          await tx.query(
+            `select 1 from blocks b join crew_members m on m.user_id = b.blocked_id and m.crew_id = $2 where b.blocker_id = $1`,
+            [userId, crewId],
+          )
+        ).rows.length > 0,
+    ));
+  if (!escaping && shouldDefer(action, await nightModeFor(deps, me!))) {
     const askAt = deferUntil(deps.clock.now(), me!.tz);
     await asService(deps.db, (tx) =>
       tx.query(

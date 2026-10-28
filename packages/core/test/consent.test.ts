@@ -93,6 +93,6 @@ describe("hide-me", () => {
 describe("reports", () => {
   it("every reason has a label, subject-categories auto-hide", () => {
     for (const r of REPORT_REASONS) expect(REPORT_LABELS[r]).toBeTruthy();
-    expect([...AUTO_HIDE_REASONS].sort()).toEqual(["in_photo", "minor", "nudity"]);
+    expect([...AUTO_HIDE_REASONS].sort()).toEqual(["in_photo", "nudity", "under_18", "under_21"]);
   });
 });

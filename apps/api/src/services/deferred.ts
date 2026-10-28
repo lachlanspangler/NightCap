@@ -13,6 +13,14 @@ export async function executeDeferred(
     await asUser(deps.db, userId, (tx) =>
       tx.query(`delete from crew_members where crew_id = $1 and user_id = $2`, [payload.crewId, target]),
     );
+    // Removed (or leaving) also means out of the crew's nights that haven't developed yet (C1):
+    // a removed person must not see tonight's album in the morning.
+    await asService(deps.db, (tx) =>
+      tx.query(
+        `delete from night_members where user_id = $2 and night_id in (select id from nights where crew_id = $1 and unlocked_at is null)`,
+        [payload.crewId, target],
+      ),
+    );
     // A crew is never left without an owner (code review #10): hand it to the longest-standing member.
     await asService(deps.db, (tx) =>
       tx.query(
@@ -27,8 +35,12 @@ export async function executeDeferred(
   if (action === "delete_account") {
     // Hard delete: media first, then the auth user (cascades profile → crews created, memberships, shots, tags…).
     const keys = await asService(deps.db, async (tx) =>
+      // Evidence (reported nudity / under-18) is preserved for review (privacy review C2).
       (
-        await tx.query<{ media_key: string }>(`select media_key from shots where author_id = $1`, [userId])
+        await tx.query<{ media_key: string }>(
+          `select media_key from shots where author_id = $1 and not evidence_hold`,
+          [userId],
+        )
       ).rows.map((r) => r.media_key),
     );
     for (const k of keys) await deps.media.delete(k).catch(() => undefined);
@@ -45,6 +57,12 @@ export async function executeDeferred(
       await tx.query(
         `update crews c set created_by = (select user_id from crew_members where crew_id = c.id and role = 'owner' and user_id <> $1 limit 1)
                       where created_by = $1 and exists (select 1 from crew_members where crew_id = c.id and user_id <> $1)`,
+        [userId],
+      );
+      // Photos you were tagged in (kept or pending) get hidden for good, so leaving NightCap takes
+      // your face with you, not just the photos you took (privacy review M5).
+      await tx.query(
+        `update shots set subject_hidden = true where id in (select shot_id from shot_tags where subject_id = $1 and status <> 'removed')`,
         [userId],
       );
       // Hides outlive the hider (migration 0005): make them permanent before the cascade.

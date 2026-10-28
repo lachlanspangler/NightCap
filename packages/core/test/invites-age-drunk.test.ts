@@ -138,11 +138,11 @@ describe("drunk-proof rules", () => {
     expect(TARGETS.dayMin).toBeGreaterThanOrEqual(44);
   });
   it("defers irreversible social actions at night, never safety actions", () => {
-    for (const a of ["leave_crew", "delete_account", "remove_member", "delete_crew"] as const) {
+    for (const a of ["leave_crew", "delete_account", "delete_crew"] as const) {
       expect(shouldDefer(a, true)).toBe(true);
       expect(shouldDefer(a, false)).toBe(false);
     }
-    for (const a of ["block_user", "report", "hide_shot", "delete_shot"] as const)
+    for (const a of ["block_user", "report", "hide_shot", "delete_shot", "remove_member"] as const)
       expect(shouldDefer(a, true)).toBe(false);
   });
   it("defers until the next 10am", () => {

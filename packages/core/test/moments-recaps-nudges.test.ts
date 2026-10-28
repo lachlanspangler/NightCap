@@ -196,3 +196,42 @@ describe("nudges", () => {
     expect(text).not.toMatch(/streak|lazy|ignor/i);
   });
 });
+
+describe("nudges respect blocks and mutes (privacy review M1)", () => {
+  const at = (iso: string) => new Date(iso);
+  const members = ["maya", "theo", "jules"].map((userId) => ({
+    userId,
+    joinedAt: at("2026-01-01T00:00:00Z"),
+    mutedUntil: null as Date | null,
+  }));
+  const w = (iso: string, posted: string[]) => ({
+    opensAt: at(iso),
+    closesAt: new Date(at(iso).getTime() + 7_200_000),
+    postedUserIds: posted,
+  });
+  const closed = [
+    w("2026-10-24T02:00:00Z", ["maya", "theo"]),
+    w("2026-10-17T02:00:00Z", ["maya", "theo"]),
+    w("2026-10-10T02:00:00Z", ["maya", "theo"]),
+  ];
+  const now = at("2026-10-28T17:00:00Z");
+  it("never nudges someone about a person they blocked (or who blocked them)", () => {
+    const r = computeNudges({
+      members,
+      closedMoments: closed,
+      openMoment: null,
+      sent: [],
+      now,
+      blockedPairs: new Set(["jules|maya"]),
+    });
+    expect(r).toEqual([{ toUserId: "theo", aboutUserId: "jules", kind: "quiet_friend" }]);
+  });
+  it("never nudges about someone who muted the crew", () => {
+    const muted = members.map((m) =>
+      m.userId === "jules" ? { ...m, mutedUntil: at("2027-01-01T00:00:00Z") } : m,
+    );
+    expect(computeNudges({ members: muted, closedMoments: closed, openMoment: null, sent: [], now })).toEqual(
+      [],
+    );
+  });
+});

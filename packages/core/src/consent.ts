@@ -78,21 +78,42 @@ export function canUnhide(hiderId: string, actorId: string): boolean {
   return hiderId === actorId;
 }
 
-export const REPORT_REASONS = ["in_photo", "nudity", "minor", "harassment", "violence", "other"] as const;
+export const REPORT_REASONS = [
+  "in_photo",
+  "nudity",
+  "under_18",
+  "under_21",
+  "harassment",
+  "violence",
+  "other",
+] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
 /** Subject-category reports hide the shot for everyone (pending review), not just the reporter. */
 export const AUTO_HIDE_REASONS: ReadonlySet<ReportReason> = new Set<ReportReason>([
   "in_photo",
   "nudity",
-  "minor",
+  "under_18",
+  "under_21",
 ]);
+
+/**
+ * Reports that preserve evidence: the media is held (the author can't hard-delete it) and its
+ * hash is denylisted. under_18 is possible CSAM (escalate, never just delete); under_21 is an
+ * underage drinker (privacy, not CSAM). Privacy review M1 C2.
+ */
+export const EVIDENCE_REASONS: ReadonlySet<ReportReason> = new Set<ReportReason>(["nudity", "under_18"]);
 
 export const REPORT_LABELS: Record<ReportReason, string> = {
   in_photo: "I'm in this and don't want it shared",
   nudity: "Nudity or sexual content",
-  minor: "Someone in it is under 21",
+  under_18: "Someone in it looks under 18",
+  under_21: "Someone in it is under 21",
   harassment: "Harassment or bullying",
   violence: "Violence or danger",
   other: "Something else",
 };
+
+/** Reasons for reporting a person (not a photo), e.g. a City Night tablemate. */
+export const USER_REPORT_REASONS = ["harassment", "violence", "under_21", "other"] as const;
+export type UserReportReason = (typeof USER_REPORT_REASONS)[number];

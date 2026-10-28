@@ -136,20 +136,101 @@ function seat(
       t.push(chosen.donor.splice(chosen.idx, 1)[0]!);
     }
   }
-  // …then move what's left of any still-small table elsewhere, or waitlist it.
-  for (let i = tables.length - 1; i >= 0; i--) {
-    const t = tables[i]!;
-    if (people(t).length >= opts.min || t.length === 0) continue;
-    tables.splice(i, 1);
-    for (const b of t) {
-      const target = tables.find(
-        (o) =>
-          people(o).length >= opts.min && people(o).length + b.members.length <= opts.max && !conflicts(o, b),
+  // Hard rule (privacy review M3): a woman who came alone is never the only woman at a table of
+  // 3+. Move her to a table with women, or swap her with a solo man there; otherwise waitlist her
+  // (if her table can spare her). A woman who came with friends isn't alone, so this doesn't apply.
+  const women = (t: SignupBlock[]) => people(t).filter((p) => p.gender === "woman").length;
+  const loneSolo = (t: SignupBlock[]) =>
+    people(t).length >= 3 && women(t) === 1
+      ? t.find((b) => b.members.length === 1 && b.members[0]!.gender === "woman")
+      : undefined;
+  const fixLone = () => {
+    for (const t of tables) {
+      const w = loneSolo(t);
+      if (!w) continue;
+      const others = tables.filter((u) => u !== t);
+      // a) move her to a table that has women and room
+      const dest = others.find(
+        (u) =>
+          women(u) >= 1 &&
+          people(u).length < opts.max &&
+          people(t).length - 1 >= opts.min &&
+          !conflicts(u, w),
       );
-      if (target) target.push(b);
-      else waitlist.push(b.blockId);
+      if (dest) {
+        t.splice(t.indexOf(w), 1);
+        dest.push(w);
+        continue;
+      }
+      // b) swap her with a solo man from a table that has women
+      let swapped = false;
+      for (const u of others) {
+        if (women(u) < 1) continue;
+        const man = u.find(
+          (b) =>
+            b.members.length === 1 &&
+            b.members[0]!.gender === "man" &&
+            !conflicts(
+              t.filter((x) => x !== w),
+              b,
+            ),
+        );
+        if (
+          !man ||
+          conflicts(
+            u.filter((x) => x !== man),
+            w,
+          )
+        )
+          continue;
+        t.splice(t.indexOf(w), 1, man);
+        u.splice(u.indexOf(man), 1, w);
+        swapped = true;
+        break;
+      }
+      if (swapped) continue;
+      // c) waitlist her rather than seat her alone
+      // (if that leaves the table short, the small-table pass below re-homes or waitlists the rest)
+      t.splice(t.indexOf(w), 1);
+      waitlist.push(w.blockId);
     }
+  };
+
+  // …then move what's left of any still-small table elsewhere, or waitlist it.
+  const dissolveSmall = () => {
+    for (let i = tables.length - 1; i >= 0; i--) {
+      const t = tables[i]!;
+      if (people(t).length >= opts.min || t.length === 0) continue;
+      tables.splice(i, 1);
+      for (const b of t) {
+        const target = tables.find(
+          (o) =>
+            people(o).length >= opts.min &&
+            people(o).length + b.members.length <= opts.max &&
+            !conflicts(o, b),
+        );
+        // Never re-home a solo woman into a table where she'd be the only woman.
+        const ok =
+          target &&
+          !(
+            b.members.length === 1 &&
+            b.members[0]!.gender === "woman" &&
+            women(target) === 0 &&
+            people(target).length >= 2
+          );
+        if (target && ok) target.push(b);
+        else waitlist.push(b.blockId);
+      }
+    }
+  };
+
+  for (let pass = 0; pass < 6; pass++) {
+    const before = JSON.stringify(tables.map((t) => t.map((x) => x.blockId)));
+    dissolveSmall();
+    fixLone();
+    if (JSON.stringify(tables.map((t) => t.map((x) => x.blockId))) === before) break;
   }
+  dissolveSmall();
 
   return {
     tables: tables

@@ -138,7 +138,7 @@ async function eventView(deps: Deps, userId: string, e: EventRow) {
     const count = (await tx.query<{ n: number }>(`select city_signup_count($1) as n`, [e.id])).rows[0]!.n;
     const table = (
       await tx.query<{ id: string; night_id: string | null; seat_label: string }>(
-        `select t.id, t.night_id, t.seat_label from city_tables t join city_table_members m on m.table_id = t.id and m.user_id = $2 where t.event_id = $1`,
+        `select t.id, t.night_id, t.seat_label from city_tables t join city_table_members m on m.table_id = t.id and m.user_id = $2 and m.left_at is null where t.event_id = $1`,
         [e.id, userId],
       )
     ).rows[0];
@@ -417,26 +417,34 @@ city.get("/connections", async (c) => {
 city.post("/tables/:id/leave", async (c) => {
   const deps = c.get("deps");
   const userId = c.get("userId");
-  // Leaving revokes everything (code review #6): the seat, the names, and the table's roll.
   const tableId = param(c, "id");
+  // Leaving is immediate and revokes access (seat, names, the table's roll), but keeps the seat
+  // history for "met before" spreading (privacy review M2). Your photos stay unless you also ask
+  // for them to go (a separate, deliberate choice in the app).
+  const p = await body(c, z.object({ removePhotos: z.boolean().default(false) }));
   const keys: string[] = [];
   await asService(deps.db, async (tx) => {
     const t = (
       await tx.query<{ night_id: string | null }>(
-        `select t.night_id from city_tables t join city_table_members m on m.table_id = t.id where t.id = $1 and m.user_id = $2`,
+        `select t.night_id from city_tables t join city_table_members m on m.table_id = t.id where t.id = $1 and m.user_id = $2 and m.left_at is null`,
         [tableId, userId],
       )
     ).rows[0];
     if (!t) return;
-    await tx.query(`delete from city_table_members where table_id = $1 and user_id = $2`, [tableId, userId]);
+    await tx.query(`update city_table_members set left_at = $3 where table_id = $1 and user_id = $2`, [
+      tableId,
+      userId,
+      deps.clock.now(),
+    ]);
     if (t.night_id) {
       await tx.query(`delete from night_members where night_id = $1 and user_id = $2`, [t.night_id, userId]);
-      // Your photos leave with you (review R2-3).
-      const gone = await tx.query<{ media_key: string }>(
-        `update shots set status = 'deleted' where night_id = $1 and author_id = $2 and status <> 'deleted' returning media_key`,
-        [t.night_id, userId],
-      );
-      keys.push(...gone.rows.map((r) => r.media_key));
+      if (p.removePhotos) {
+        const gone = await tx.query<{ media_key: string }>(
+          `update shots set status = 'deleted' where night_id = $1 and author_id = $2 and status <> 'deleted' and not evidence_hold returning media_key`,
+          [t.night_id, userId],
+        );
+        keys.push(...gone.rows.map((r) => r.media_key));
+      }
     }
   });
   for (const k of keys) await deps.media.delete(k).catch(() => undefined);

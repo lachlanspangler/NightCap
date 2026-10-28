@@ -26,3 +26,14 @@ invites.post("/redeem", async (c) => {
   );
   return c.json({ kind: r.kind, crewId: r.crew_id ?? null, nightId: r.night_id ?? null });
 });
+
+/** Turn a link off (privacy review H2). Only its creator can. */
+invites.post("/:id/revoke", async (c) => {
+  const deps = c.get("deps");
+  const id = c.req.param("id");
+  if (!/^[0-9a-f-]{36}$/.test(id)) fail(404, "not_found");
+  await asUser(deps.db, c.get("userId"), (tx) =>
+    tx.query(`select revoke_invite($1, $2)`, [id, deps.clock.now()]),
+  );
+  return c.json({ ok: true });
+});

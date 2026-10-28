@@ -1,4 +1,4 @@
-import { deferUntil, shouldDefer } from "@nightcap/core";
+import { checkAge, deferUntil, isValidTimeZone, shouldDefer } from "@nightcap/core";
 import { asService, asUser } from "@nightcap/db";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -8,6 +8,39 @@ import { liveNightOf, loadMe, nightModeFor } from "../services/util";
 import { executeDeferred } from "../services/deferred";
 
 export const me = new Hono<AppEnv>();
+
+/**
+ * Create your profile after signing in (prod path: Supabase phone/Apple auth gives the account,
+ * this gives the profile). The 21+ gate lives here too, on the server clock (privacy review L1).
+ */
+me.post("/profile", async (c) => {
+  const deps = c.get("deps");
+  const userId = c.get("userId");
+  const p = await body(
+    c,
+    z.object({
+      name: z.string().trim().min(1).max(30),
+      birthdate: z.string(),
+      tz: z.string().max(64).refine(isValidTimeZone, "unknown time zone"),
+    }),
+  );
+  if (await loadMe(deps, userId)) fail(409, "conflict", "You already have a profile.");
+  const age = checkAge(p.birthdate, deps.clock.now(), p.tz);
+  if (!age.ok)
+    fail(
+      age.error === "under_21" ? 403 : 422,
+      age.error,
+      age.error === "under_21" ? "NightCap is for 21+." : "That date doesn't look right.",
+    );
+  await asService(deps.db, async (tx) => {
+    await tx.query(`insert into auth.users (id) values ($1) on conflict do nothing`, [userId]);
+    await tx.query(
+      `insert into profiles (id, display_name, birthdate, is_21_attested, tz) values ($1, $2, $3, true, $4)`,
+      [userId, p.name, p.birthdate, p.tz],
+    );
+  });
+  return c.json({ ok: true }, 201);
+});
 
 me.get("/", async (c) => {
   const deps = c.get("deps");
