@@ -116,7 +116,7 @@ export function PersonSheet({
                 <HoldButton
                   testID="person-remove-night"
                   label="Remove from tonight"
-                  hint="Hold. They lose the roll and the album. No undo."
+                  hint="Hold. They lose the roll and the album, can't rejoin, and the code changes."
                   scale={scale}
                   onConfirm={() =>
                     run(
