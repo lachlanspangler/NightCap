@@ -160,7 +160,7 @@ describe("join with a code", () => {
     expect(height(key).height).toBeGreaterThanOrEqual(56);
   });
   it("wrong code: generic message, digits cleared", async () => {
-    global.fetch = jest.fn(async () => ({
+    globalThis.fetch = jest.fn(async () => ({
       ok: false,
       status: 404,
       text: async () =>

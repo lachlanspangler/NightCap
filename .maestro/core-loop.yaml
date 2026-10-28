@@ -1,0 +1,154 @@
+# NightCap core loop (Maestro, our simulator via Expo Go):
+# crew → start a night → snap → friends snap → end (hold) → morning (sober check) → review →
+# "I'm good" → everyone's up → the album develops → open a photo, react.
+# Run with `make maestro` (reseeds the demo world first, waits for a quiet machine).
+appId: host.exp.Exponent
+name: core loop
+---
+- runFlow: util-open-app.yaml
+- runFlow:
+    when:
+      visible:
+        id: "demo-maya"
+    commands:
+      - takeScreenshot: core-00-welcome
+      - tapOn:
+          id: "demo-maya"
+- extendedWaitUntil:
+    visible:
+      id: "home-greeting"
+    timeout: 30000
+- takeScreenshot: core-01-home
+- scrollUntilVisible:
+    element:
+      id: "crew-card-Night Owls"
+- tapOn:
+    id: "crew-card-Night Owls"
+- extendedWaitUntil:
+    visible:
+      id: "crew-start-night"
+    timeout: 15000
+- takeScreenshot: core-02-crew
+- tapOn:
+    id: "crew-start-night"
+- extendedWaitUntil:
+    visible:
+      id: "shutter"
+    timeout: 20000
+- takeScreenshot: core-03-camera
+- tapOn:
+    id: "shutter"
+- waitForAnimationToEnd
+- tapOn:
+    id: "shutter"
+- waitForAnimationToEnd
+- tapOn:
+    id: "shutter"
+- extendedWaitUntil:
+    visible:
+      text: "21"
+    timeout: 20000
+# Friends (Theo, Jules, Sam) join and snap, via the dev panel.
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-friends-snap"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 60000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      text: ".*1[0-9] in the roll"
+    timeout: 20000
+- takeScreenshot: core-04-camera-friends
+# Invite: the code + QR.
+- tapOn:
+    id: "night-invite"
+- extendedWaitUntil:
+    visible:
+      id: "invite-code"
+    timeout: 15000
+- takeScreenshot: core-05-invite
+- tapOn:
+    id: "invite-done"
+# End the night: a deliberate hold, not a tap.
+- tapOn:
+    id: "night-end"
+- longPressOn:
+    id: "night-end-hold"
+- extendedWaitUntil:
+    visible:
+      id: "developing-title"
+    timeout: 20000
+- takeScreenshot: core-06-developing-3am
+# Morning.
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-jump-morning"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 20000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      id: "im-good"
+    timeout: 30000
+- takeScreenshot: core-07-developing-morning
+# Hold until morning: look through my shots, toss one.
+- tapOn:
+    id: "review-mine"
+- extendedWaitUntil:
+    visible:
+      id: "review-toss"
+    timeout: 15000
+- takeScreenshot: core-08-review
+- tapOn:
+    id: "review-toss"
+- tapOn:
+    id: "review-keep"
+- tapOn:
+    id: "review-keep"
+- tapOn:
+    id: "review-done"
+- tapOn:
+    id: "im-good"
+- extendedWaitUntil:
+    visible:
+      text: "You're up.*"
+    timeout: 20000
+# Everyone else wakes up → it develops early.
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-friends-ready"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 30000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      text: "It developed."
+    timeout: 30000
+- takeScreenshot: core-09-reveal-start
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: core-10-album
+- tapOn:
+    id: "shot-1"
+- extendedWaitUntil:
+    visible:
+      id: "photo"
+    timeout: 15000
+- tapOn:
+    id: "react-🔥"
+- takeScreenshot: core-11-photo
+- tapOn:
+    id: "photo-close"

@@ -16,7 +16,7 @@ export function renderScreen(ui: ReactElement, cache: Record<string, unknown> = 
 
 export function mockFetch(routes: Record<string, unknown>) {
   const calls: { method: string; path: string; body: unknown }[] = [];
-  global.fetch = jest.fn(async (url: string, init?: RequestInit) => {
+  globalThis.fetch = jest.fn(async (url: string, init?: RequestInit) => {
     const path = String(url).replace(/^https?:\/\/[^/]+/, "");
     const method = init?.method ?? "GET";
     calls.push({ method, path, body: init?.body });

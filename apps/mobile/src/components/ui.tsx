@@ -206,6 +206,7 @@ export function BigButton({
           transform: [{ scale: pressed ? 0.98 : 1 }],
         },
         kind === "secondary" && { borderWidth: 1, borderColor: mode === "night" ? night.line : dawn.line },
+        !primary && { paddingHorizontal: 16 },
         style,
       ]}
     >

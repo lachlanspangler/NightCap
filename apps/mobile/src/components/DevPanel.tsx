@@ -30,6 +30,10 @@ export function DevPanel() {
   const session = useSession();
   const users = useApi<{ users: DemoUser[] }>(MOCK ? "/dev/users" : null);
   useEffect(() => onFocusChange(() => force((n) => n + 1)), []);
+  useEffect(() => {
+    const t = setInterval(() => force((n) => n + 1), 30_000);
+    return () => clearInterval(t);
+  }, []);
   if (!MOCK || !devChrome()) return null;
   const scale = scaleFor(false);
   const nightId = getFocusedNight();
@@ -62,19 +66,24 @@ export function DevPanel() {
         accessibilityRole="button"
         accessibilityLabel="Open dev panel"
         onPress={() => setOpen(true)}
+        hitSlop={8}
         style={{
           position: "absolute",
-          right: 12,
-          top: insets.top + 6,
+          left: 0,
+          top: "46%",
           backgroundColor: "rgba(155,123,224,0.92)",
-          borderRadius: 999,
-          paddingHorizontal: 12,
-          paddingVertical: 7,
+          borderTopRightRadius: 12,
+          borderBottomRightRadius: 12,
+          paddingHorizontal: 6,
+          paddingVertical: 10,
         }}
       >
-        <Text
-          style={{ fontFamily: fonts.bodyBlack, fontSize: 12, color: "#140B22", letterSpacing: 1 }}
-        >{`DEV · ${formatLocalTime(serverNow(), "America/Chicago")}`}</Text>
+        <Text style={{ fontFamily: fonts.bodyBlack, fontSize: 10, color: "#140B22", letterSpacing: 1 }}>
+          DEV
+        </Text>
+        <Text style={{ fontFamily: fonts.bodyBold, fontSize: 9, color: "#140B22" }}>
+          {formatLocalTime(serverNow(), "America/Chicago").replace(" ", "\n")}
+        </Text>
       </Pressable>
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
         <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" }}>

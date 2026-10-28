@@ -63,19 +63,21 @@ export function FilmTile({
           <Circle key={i} cx={d.x} cy={d.y * 1.33} r={d.r} fill="#FFD9A0" opacity={d.o} />
         ))}
       </Svg>
-      <Text
-        style={{
-          position: "absolute",
-          left: 7,
-          bottom: 5,
-          fontFamily: fonts.bodyBold,
-          fontSize: Math.max(10, size * 0.11),
-          color: "rgba(255,214,160,0.75)",
-          letterSpacing: 1,
-        }}
-      >
-        {String(frame).padStart(2, "0")}
-      </Text>
+      {size >= 30 && (
+        <Text
+          style={{
+            position: "absolute",
+            left: 7,
+            bottom: 5,
+            fontFamily: fonts.bodyBold,
+            fontSize: Math.max(10, size * 0.11),
+            color: "rgba(255,214,160,0.75)",
+            letterSpacing: 1,
+          }}
+        >
+          {String(frame).padStart(2, "0")}
+        </Text>
+      )}
     </View>
   );
 }

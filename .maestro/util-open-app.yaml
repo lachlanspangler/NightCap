@@ -1,0 +1,17 @@
+# Opens NightCap in Expo Go on our simulator: taps through iOS's "Open in Expo Go?" prompt and
+# dismisses Expo Go's one-time dev-menu intro / dev menu if they show up.
+appId: host.exp.Exponent
+---
+# Fresh start: a running Expo Go keeps the old bundle and screen state.
+- stopApp
+- openLink: exp://127.0.0.1:8091
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "NightCap|Night Owls|Morning.*|.*night, .*|Hey .*|.*evening, .*"
+    timeout: 90000
+- tapOn:
+    text: "Continue"
+    optional: true

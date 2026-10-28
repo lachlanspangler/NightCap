@@ -14,7 +14,9 @@ export function rateLimit(opts: {
     if (k === null) return next();
     const now = c.get("deps").clock.now().getTime();
     const b = buckets.get(k) ?? { tokens: opts.capacity, at: now };
-    b.tokens = Math.min(opts.capacity, b.tokens + ((now - b.at) / 1000) * opts.refillPerSec);
+    // Clamp: dev time travel can move the clock backwards; that must never drain the bucket.
+    const elapsed = Math.max(0, now - b.at);
+    b.tokens = Math.max(0, Math.min(opts.capacity, b.tokens + (elapsed / 1000) * opts.refillPerSec));
     b.at = now;
     if (b.tokens < 1) {
       buckets.set(k, b);

@@ -3,14 +3,16 @@
 **Status:** accepted · 2026-10-28
 
 ## Context
+
 NightCap has to feel amazing in the hand at 1am in a dark bar (DRUNK_UX) and at 10am in bed with a
 hangover. The emotional peak is the morning reveal. The sister app NightOut is neon and map-first,
 so NightCap needs its own feel.
 
 ## Decision
-- **Two palettes, one app.** *Night* (live + developing): ink background `#0C0A14`, plum surfaces,
+
+- **Two palettes, one app.** _Night_ (live + developing): ink background `#0C0A14`, plum surfaces,
   cream text `#F7EFE2`, **amber safelight** accent `#FFB44D` (the darkroom's safe light: the colour of
-  "developing"). *Dawn* (an unlocked album): peach → pink → lilac sunrise gradient, ink text. When an
+  "developing"). _Dawn_ (an unlocked album): peach → pink → lilac sunrise gradient, ink text. When an
   album unlocks, the screen literally goes from night to dawn.
 - **Type:** Fraunces (soft, warm serif; SIL OFL via @expo-google-fonts) for display moments: crew
   names, "Developing…", big numbers like the shot counter and the night code. Inter for UI.
@@ -24,5 +26,6 @@ so NightCap needs its own feel.
 - **No logos of other apps, no stock photos.** Demo photos are generated (scripts/gen-photos.mjs).
 
 ## Consequences
+
 - Two token sets to keep in sync (one file, `apps/mobile/src/theme.ts`, tested).
 - Fraunces + Inter load at startup (expo-font). The splash covers the load.
