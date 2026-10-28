@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Fast pre-commit: secrets + ledger + lint on staged TS. The full gate is `make check`.
+set -e
+node scripts/doctor.mjs >/dev/null || { node scripts/doctor.mjs | grep -E "🔴"; echo "doctor is red: fix before committing"; exit 1; }

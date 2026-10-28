@@ -1,0 +1,28 @@
+# Local Supabase stack for NightCap (only if you run `supabase start`; needs Docker).
+# Own project_id and shifted ports so it never collides with NightOut or Supabase defaults
+# (shared laptop rules, CLAUDE.md). Migrations live in packages/db/migrations (skip 0000_*).
+project_id = "nightcap"
+
+[api]
+enabled = true
+port = 54421
+
+[db]
+port = 54422
+shadow_port = 54420
+major_version = 17
+
+[studio]
+enabled = true
+port = 54423
+
+[inbucket]
+enabled = true
+port = 54424
+
+[analytics]
+enabled = false
+port = 54427
+
+[auth]
+site_url = "nightcap://"
