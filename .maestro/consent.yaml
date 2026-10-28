@@ -11,7 +11,7 @@ name: consent
     timeout: 15000
 - takeScreenshot: consent-01-tags
 - tapOn:
-    text: "Theo tagged you"
+    id: "tag-row-.*"
     index: 0
 - extendedWaitUntil:
     visible:

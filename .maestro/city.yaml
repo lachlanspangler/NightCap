@@ -41,8 +41,9 @@ name: city nights
       id: "city-table"
     timeout: 40000
 - takeScreenshot: city-04-table
-- assertVisible:
-    id: "city-share-plan"
+- scrollUntilVisible:
+    element:
+      id: "city-share-plan"
 # The morning after: keep in touch?
 - tapOn:
     id: "dev-pill"
@@ -52,6 +53,10 @@ name: city nights
     visible:
       id: "dev-note"
     timeout: 15000
+# once more: today's 10am can come before the event has ended; tomorrow's never does
+- tapOn:
+    id: "dev-jump-unlock"
+- waitForAnimationToEnd
 - tapOn:
     id: "dev-close"
 - extendedWaitUntil:

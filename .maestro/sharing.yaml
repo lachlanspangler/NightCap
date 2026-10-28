@@ -56,7 +56,7 @@ name: sharing
       id: "shutter"
     timeout: 20000
 - assertVisible:
-    text: "2 in the roll|.* in the roll"
+    text: ".* in the roll.*"
 - tapOn:
     id: "shutter"
 - takeScreenshot: share-03-guest-camera

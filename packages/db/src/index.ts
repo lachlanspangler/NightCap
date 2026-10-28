@@ -7,6 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createHash } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 
 export interface Queryable {
@@ -67,19 +68,38 @@ export function pgliteDb(pg: PGlite): Db {
   };
 }
 
+export class MigrationDriftError extends Error {}
+
+/**
+ * Apply pending migrations. Each applied migration's sha256 is recorded; if a file that was
+ * already applied has since been edited, refuse to start (a silently diverged dev DB once made
+ * the mock clock fall back to production clamping). Fix with `make reset-db`.
+ */
 export async function migrate(pg: PGlite, target: MigrationTarget = "pglite"): Promise<string[]> {
   await pg.exec(
-    `create table if not exists public._migrations (name text primary key, applied_at timestamptz not null default now())`,
+    `create table if not exists public._migrations (name text primary key, applied_at timestamptz not null default now(), sha256 text)`,
   );
-  const done = new Set(
-    (await pg.query<{ name: string }>(`select name from public._migrations`)).rows.map((r) => r.name),
+  await pg.exec(`alter table public._migrations add column if not exists sha256 text`);
+  const done = new Map(
+    (
+      await pg.query<{ name: string; sha256: string | null }>(`select name, sha256 from public._migrations`)
+    ).rows.map((r) => [r.name, r.sha256]),
   );
   const applied: string[] = [];
   for (const m of listMigrations(target)) {
-    if (done.has(m.name)) continue;
+    const hash = createHash("sha256").update(m.sql).digest("hex");
+    if (done.has(m.name)) {
+      const was = done.get(m.name);
+      if (was && was !== hash)
+        throw new MigrationDriftError(
+          `migration ${m.name} changed after it was applied to this database: run \`make reset-db\``,
+        );
+      if (!was) await pg.query(`update public._migrations set sha256 = $2 where name = $1`, [m.name, hash]);
+      continue;
+    }
     await pg.transaction(async (tx) => {
       await tx.exec(m.sql);
-      await tx.query(`insert into public._migrations (name) values ($1)`, [m.name]);
+      await tx.query(`insert into public._migrations (name, sha256) values ($1, $2)`, [m.name, hash]);
     });
     applied.push(m.name);
   }

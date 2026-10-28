@@ -106,7 +106,7 @@ export default function EventScreen() {
                 <Avatar name={p.name} hue={p.hue} size={44} ring={p.me ? night.amber : undefined} />
                 <View style={{ flex: 1 }}>
                   <Txt v="label">{p.me ? `${p.name} (you)` : p.name}</Txt>
-                  {p.funLine && (
+                  {p.funLine && !ended && (
                     <Txt v="small" tone="textDim">
                       {p.funLine}
                     </Txt>

@@ -105,3 +105,18 @@ describe("recaps and nudges on the demo world", () => {
     if (nudges.length) expect(nudges[0].payload.text).toMatch(/Devin hasn't been in a Nightcap/);
   });
 });
+
+describe("on this night at 4am", () => {
+  it("still finds last year's night (the night's date is yesterday's calendar date)", async () => {
+    const t = await testApp({ now: "2026-10-28T09:00:00Z" }); // 04:00 CDT
+    await t.req("POST", "/dev/reseed");
+    const maya = (
+      await t.req("POST", "/dev/login", { json: { userId: "11111111-1111-4111-8111-111111111111" } })
+    ).body.token;
+    const owls = (await t.req("GET", "/crews", { token: maya })).body.crews.find(
+      (c: { name: string }) => c.name === "Night Owls",
+    );
+    const r = (await t.req("GET", `/crews/${owls.id}/recaps`, { token: maya })).body;
+    expect(r.onThisNight).toEqual([expect.objectContaining({ yearsAgo: 1 })]);
+  });
+});

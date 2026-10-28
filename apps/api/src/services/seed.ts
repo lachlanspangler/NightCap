@@ -7,6 +7,7 @@ import {
   MINUTE,
   computeNightSchedule,
   localParts,
+  nightDate,
   pastMoments,
   zonedToInstant,
   addLocalDays,
@@ -341,11 +342,13 @@ export async function seedDemo(deps: Deps): Promise<{ shots: number }> {
       [4, 4, 3],
     );
 
-    // 3. One year ago tonight (powers "On this night").
+    // 3. One year ago tonight (powers "On this night"). "Tonight" is the night's date: at 1–5am
+    // that's yesterday's calendar date, so anchor on nightDate(now), not on now's calendar date.
+    const yearAgo = addLocalDays(nightDate(now, DEMO_TZ), -365);
     await pastNight(
       tx,
       DEMO_CREWS.owls,
-      localAt(now, 365, 21),
+      zonedToInstant({ ...yearAgo, hour: 21 }, DEMO_TZ),
       "Dinkytown, the legend",
       "Kollege Klub",
       ["maya", "theo", "jules", "sam"],

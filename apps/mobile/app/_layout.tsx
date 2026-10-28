@@ -50,10 +50,8 @@ export default function RootLayout() {
               }}
             >
               <Stack.Screen name="night/[id]" options={{ animation: "fade", gestureEnabled: false }} />
-              <Stack.Screen
-                name="photo/[nightId]/[shotId]"
-                options={{ presentation: "fullScreenModal", animation: "fade" }}
-              />
+              {/* Not a modal: root-level undo toasts must be able to sit on top of it. */}
+              <Stack.Screen name="photo/[nightId]/[shotId]" options={{ animation: "fade" }} />
               <Stack.Screen name="invite/[id]" options={{ presentation: "modal" }} />
               <Stack.Screen name="crew/new" options={{ presentation: "modal" }} />
             </Stack>

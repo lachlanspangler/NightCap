@@ -12,12 +12,7 @@ name: core loop
         id: "demo-maya"
     commands:
       - takeScreenshot: core-00-welcome
-      - tapOn:
-          id: "demo-maya"
-- extendedWaitUntil:
-    visible:
-      id: "home-greeting"
-    timeout: 30000
+- runFlow: util-as-maya.yaml
 - takeScreenshot: core-01-home
 - scrollUntilVisible:
     element:
@@ -61,7 +56,7 @@ name: core loop
     id: "dev-close"
 - extendedWaitUntil:
     visible:
-      text: ".*1[0-9] in the roll"
+      text: ".*1[0-9] in the roll.*"
     timeout: 20000
 - takeScreenshot: core-04-camera-friends
 # Invite: the code + QR.

@@ -75,3 +75,13 @@ describe("0004 reaction set", () => {
     await pg.close();
   });
 });
+
+describe("migration drift", () => {
+  it("refuses to run when an applied migration was edited", async () => {
+    const { createPglite: mk, migrate: run } = await import("../src");
+    const { pg } = await mk();
+    await pg.query(`update public._migrations set sha256 = 'deadbeef' where name = '0001_core.sql'`);
+    await expect(run(pg)).rejects.toThrow(/changed after it was applied/);
+    await pg.close();
+  });
+});

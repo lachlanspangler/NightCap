@@ -65,4 +65,8 @@ maestro: ## wait for quiet, then run Maestro flows on our simulator
 reseed: ## wipe + reseed the demo world (API must be running)
 	curl -s -X POST http://127.0.0.1:$(API_PORT)/dev/reseed | head -c 200; echo
 
-.PHONY: help setup typecheck lint test check ideas ideas-check ideas-next doctor heal api metro demo stop sim-shot maestro reseed
+.PHONY: reset-db help setup typecheck lint test check ideas ideas-check ideas-next doctor heal api metro demo stop sim-shot maestro reseed
+
+reset-db: ## wipe OUR mock database (.data/pglite) and media; the API reseeds on next start
+	rm -rf .data/pglite .data/media
+	@echo "mock DB reset: restart the API (scripts/demo.sh api)"

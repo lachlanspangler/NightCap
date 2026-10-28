@@ -139,3 +139,22 @@ Baseline: `npx vitest run` → 284 tests green. Re-probed with a scratch test (`
 **R2-6 (low):** evidence media has no access control, retention or escalation path beyond `/dev/reports` (prod gap, keep it on STATUS). The under-21 instant-retry flag is still not built. The lone-woman rule ignores solo non-binary people despite MEET_PEOPLE #11's wording.
 
 Sign-off: no — fix R2-1, R2-2 (and R2-3) first; R2-4/R2-5 next loop.
+
+## Round 3 (verifying 410fc64 + c433023, migration 0012)
+
+Baseline: `npx vitest run` → 288 tests green. Re-probed with a scratch test (`apps/api/test/zz-probe-privacy3.test.ts`, deleted).
+
+**Verified fixed:**
+- R2-1: a mid-night tag reveals nothing (subject sees 0 shots); after the night ends the author-tagged subject previews and can hide; a subject's own tag before the unlock is refused (403) and the third person sees 0.
+- R2-2: a removed member is banned: crew rejoin, old code and new code all 404, the night 404s and drops off their crew card; the code rotated; a guest can't remove the host (403).
+- R2-3: the blocker keeps the crew night and can join after the blocked person did; mutual invisibility holds inside it. The blocked side can't see or join the blocker's night.
+- R2-4: `runNudges` passes crew block pairs.
+- R2-5: a report survives the reporter's deletion (`reporter_id` null, snapshot kept); reporting after leaving a table works; strangers can't report (404).
+- R2-6: solo non-binary people covered by the lone rule.
+
+**Residual (low, acceptable for the prototype):**
+- The blocked side still gets `409 crew_has_live_night` if they try to start a night while the blocker's is live: it tells them a night exists, not where or whose. Fix later with a generic "can't start right now".
+- A preview shot the author then tosses has already been seen (and could be saved) by the tagged subject. That's the author's own choice to tag; say so in the review copy ("people you tag see it now").
+- Production gaps stay on STATUS: real ID verification, NCMEC/StopNCII and a moderator tool, evidence access control and retention, perceptual hashing, block evasion via new accounts, the under-21 retry flag, PostgREST exposure off.
+
+Sign-off: yes, for milestone 1 in mock mode. The production gaps above must close before real users.

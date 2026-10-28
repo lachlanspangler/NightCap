@@ -261,25 +261,27 @@ export default function LiveNight() {
                 style={{ fontFamily: fonts.body, color: N.textDim, fontSize: 14 }}
               >{`Develops at ${n.unlockAtLabel}`}</Text>
             </View>
-            <Pressable
-              testID="night-invite"
-              accessibilityRole="button"
-              accessibilityLabel={`Add people. Night code ${n.code?.split("").join(" ")}`}
-              onPress={() => router.push(`/invite/${n.id}`)}
-              style={{
-                minHeight: scale.target,
-                paddingHorizontal: 14,
-                borderRadius: 999,
-                backgroundColor: "rgba(12,10,20,0.6)",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ fontFamily: fonts.bodyBold, color: N.amber, fontSize: 13 }}>CODE</Text>
-              <Text style={{ fontFamily: fonts.display, color: N.text, fontSize: 20, letterSpacing: 3 }}>
-                {n.code}
-              </Text>
-            </Pressable>
+            {n.code && (
+              <Pressable
+                testID="night-invite"
+                accessibilityRole="button"
+                accessibilityLabel={`Add people. Night code ${n.code?.split("").join(" ")}`}
+                onPress={() => router.push(`/invite/${n.id}`)}
+                style={{
+                  minHeight: scale.target,
+                  paddingHorizontal: 14,
+                  borderRadius: 999,
+                  backgroundColor: "rgba(12,10,20,0.6)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontFamily: fonts.bodyBold, color: N.amber, fontSize: 13 }}>CODE</Text>
+                <Text style={{ fontFamily: fonts.display, color: N.text, fontSize: 20, letterSpacing: 3 }}>
+                  {n.code}
+                </Text>
+              </Pressable>
+            )}
           </View>
           <Gap h={10} />
           <Pressable

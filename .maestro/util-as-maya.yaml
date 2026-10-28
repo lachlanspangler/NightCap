@@ -1,4 +1,4 @@
-# Open the app signed in as Maya (taps the demo button if we're on the welcome screen).
+# Open the app signed in as Maya, whoever was signed in before (flows leave other users signed in).
 appId: host.exp.Exponent
 ---
 - runFlow: util-open-app.yaml
@@ -12,7 +12,7 @@ appId: host.exp.Exponent
 - runFlow:
     when:
       notVisible:
-        id: "home-greeting"
+        id: "demo-maya"
     commands:
       - tapOn:
           id: "dev-pill"
@@ -26,5 +26,5 @@ appId: host.exp.Exponent
           id: "dev-close"
 - extendedWaitUntil:
     visible:
-      id: "home-greeting"
+      text: ".*Maya\\."
     timeout: 30000
