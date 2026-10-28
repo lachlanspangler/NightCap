@@ -78,3 +78,25 @@ what it felt like.
   body text; home's 3am primary action.
 - **Found myself while waiting:** a hide disappeared with the hider's account (cascade), which
   would re-reveal the photo → sticky `subject_hidden` (migration 0005), mirrored in core + fixture.
+
+## 2026-10-28 — Milestone 1 reviews: code reviewer (signed off in round 2)
+- **Round 1:** 16 findings. The ones that mattered:
+  - **#1:** the JPEG stripper copied everything after the first scan, so GPS hidden between
+    progressive scans or in an after-EOI trailer (iPhone gain maps, Pixel motion photos) survived.
+    It now walks every segment and stops at EOI. All 48 real photos still decode (sips + ffmpeg).
+  - **#2:** "sign up with a crewmate" let someone you'd blocked join your table group. Groups now
+    need an invite and are block-checked, and the seating splits any group holding a blocked pair.
+  - **#3:** on Supabase, users' own JWTs could call the RPCs directly and forge `p_now`, walking the
+    clock past the rate limit. `nc_now()` clamps it unless the PGlite shim allows it, EXECUTE is
+    revoked from PUBLIC, and ADR 0009 says clients never talk to Postgres directly.
+  - **#4:** a join-code oracle (409 vs 404) whose attempts weren't counted. Fixed.
+  - Smaller: prod config failed open into mock; City "leave" revoked nothing; tossed shots 404'd in
+    the album and broke Save all; races hidden by single-connection PGlite (row locks + a locked
+    roll trigger now); reports didn't hide from the reporter; ownerless crews; FK errors → 500 and
+    an existence oracle; spoofable XFF; buffered uploads; tz validation; stale `useApi` responses;
+    on-device image caches outliving a hide.
+- **Round 2:** signed off for M1 in mock mode. Its follow-ups are fixed too: rightmost-XFF /
+  socket key, re-entering your own code, a leaver's photos leave with them, default privileges.
+- **Lesson:** every serious finding was a place where a *promise* (no location, blocks mean
+  never together, rate limit) depended on one layer. Where we had two layers (core + RLS, server
+  strip + `exif: false`), the review found nothing.
