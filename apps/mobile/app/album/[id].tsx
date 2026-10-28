@@ -90,7 +90,9 @@ function Header({ n, mode }: { n: Night; mode: "night" | "dawn" }) {
           ).toUpperCase()}
         </Txt>
         <Txt v="heading" mode={mode} numberOfLines={1}>
-          {n.title ?? (n.kind === "moment" ? "Nightcap" : "Last night")}
+          {mode === "dawn"
+            ? new Date(n.startedAt).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+            : (n.title ?? (n.kind === "moment" ? "Nightcap" : "Last night"))}
         </Txt>
       </View>
     </View>
@@ -372,6 +374,7 @@ function Unlocked({ n }: { n: Night }) {
   const scale = scaleFor(false);
   const session = useSession();
   const [stage, setStage] = useState<"checking" | "gate" | "developing" | "done">("checking");
+  const [justRevealed, setJustRevealed] = useState(false);
   const sky = useRef(new Animated.Value(0)).current;
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -385,6 +388,7 @@ function Unlocked({ n }: { n: Night }) {
     });
   }, [session.userId, n.id, n.shots.length, sky]);
   const develop = () => {
+    setJustRevealed(true);
     setStage("developing");
     Animated.timing(sky, {
       toValue: 1,
@@ -494,7 +498,7 @@ function Unlocked({ n }: { n: Night }) {
             <Header n={n} mode="dawn" />
             <Gap h={18} />
             <Txt v="hero" mode="dawn" testID="album-title">
-              {stage === "developing" ? "It developed." : (n.title ?? "Last night")}
+              {justRevealed ? "It developed." : (n.title ?? "Last night")}
             </Txt>
             <Gap h={4} />
             <Txt
