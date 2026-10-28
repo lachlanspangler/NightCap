@@ -100,3 +100,50 @@ shared fixture.
 - Removed tags and subject hides are enforced in triggers, and hides survive account deletion (0005).
 
 Sign-off: no. Fix #1, #2, #3, #4 and #7 first; #8 before any multi-connection Postgres.
+
+## Round 2 (verifying commits 439cda0…44a1ebc)
+
+Baseline: `npx vitest run` → 20 files, 260 tests, all green. `tsc` passes for core, db and api.
+I re-ran the round-1 probes: the EOI trailer and the APP1 between scans are now both stripped.
+
+**Verified fixed:** #1 (segment walk, stops at EOI, adds EOI when missing), #2 (invite required,
+block check, `formTables` splits blocked pairs), #3 (`nc_now` clamp, PUBLIC/anon EXECUTE revoked,
+ADR 0009), #4 (every failure after the lookup returns null, and the attempt row always commits),
+#5, #6, #7, #8 (roll trigger under the member-row lock; the guard's `for share` and the advance's
+`for update` close the review/unlock race in both orders; I checked the lock order and see no
+deadlock cycle), #9 (SQL, core and fixture), #10, #11, #13, #14, #15, #16.
+
+### Still wrong / new
+
+**R2-1 (medium, CONFIRMED by trace): #12 is only half fixed. The IP rate limiter is now spoofable
+behind a proxy, or one shared bucket without one.** `apps/api/src/app.ts:36-39`.
+With `TRUST_PROXY=1` the key is the **leftmost** X-Forwarded-For entry. Proxies append to that
+header, so the client writes the leftmost entry and can still pick any key it likes. Without
+`TRUST_PROXY`, every client gets the key `"direct"`, so the whole API shares one bucket of
+300 requests refilling at 5 per second. In prod behind a proxy (or once a few phones are polling),
+one noisy client gets everyone 429s. **Fix:** without the proxy, key on the socket address
+(`getConnInfo` from `@hono/node-server/conninfo`). With the proxy, take the entry the trusted
+proxy appended, i.e. the rightmost (`n - trustedHops`).
+
+**R2-2 (low, CONFIRMED by probe): scanning the code of a night you're already in now returns 409.**
+`routes/nights.ts:48`. The new "already in a night" check runs before the lookup, so a guest who
+scans the same QR/code again gets `already_in_live_night` instead of the old idempotent "already".
+**Fix:** if `liveNightOf` returns a night whose `join_code` equals the normalized code, return
+that night. This leaks nothing, because the caller can already see their own night's code.
+
+**R2-3 (low, PLAUSIBLE): when someone leaves a City table, their own photos stay in that table's
+album.** `routes/city.ts:420-433`. Removing the `night_members` row takes away their view, but
+`can_see_shot` doesn't require the author to still be a member. The shots they took stay visible
+to the table after the unlock, which is the opposite of what someone walking away expects.
+**Fix:** while the night is live, mark the leaver's shots `deleted` (and delete their media). After
+the unlock, ask first.
+
+**R2-4 (low): new functions are again executable by PUBLIC by default.** The 0007 revoke only
+covers functions that existed at that point; 0008 and 0009 had to revoke by hand. The next
+migration will forget. **Fix:** add `alter default privileges in schema public revoke execute on
+functions from public;` once, in 0007 or a new migration. Remaining nit:
+`blocked_either(a, b)` is still granted to `authenticated` with arbitrary ids. That's fine only
+while ADR 0009 holds, so keep it on the list for the Supabase cut-over.
+
+Sign-off: yes, for milestone 1 in mock mode. R2-1 must be fixed before any shared or prod
+deployment; R2-2 to R2-4 can go in the next loop.

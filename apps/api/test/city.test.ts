@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { service } from "@nightcap/db";
-import { testApp, type TestApp } from "./helpers";
+import { photoForm, testApp, type TestApp } from "./helpers";
 
 async function cityReady(t: TestApp, name: string, gender = "unspecified") {
   const u = await t.user(name);
@@ -220,6 +220,7 @@ describe("leaving a City table (code review #6)", () => {
     for (const p of ps) await t.req("POST", `/city/events/${id}/signup`, { token: p.token, json: {} });
     t.clock.advance(3.5 * 3_600_000);
     const table = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event.table;
+    await t.req("POST", `/nights/${table.nightId}/shots`, { token: ps[0]!.token, form: photoForm() });
     await t.req("POST", `/city/tables/${table.id}/leave`, { token: ps[0]!.token });
     const after = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event;
     expect(after.table).toBeNull();
@@ -234,5 +235,9 @@ describe("leaving a City table (code review #6)", () => {
     ).toBe(403);
     const mates = (await t.req("GET", `/city/events/${id}`, { token: ps[1]!.token })).body.event.table.people;
     expect(mates.map((m: { id: string }) => m.id)).not.toContain(ps[0]!.id);
+    // R2-3: their photos left with them.
+    t.clock.set(new Date(t.deps.clock.now().getTime() + 30 * 3_600_000));
+    expect((await t.req("GET", `/nights/${table.nightId}`, { token: ps[1]!.token })).body.night.shots).toEqual([]);
+    expect(t.media.files.size).toBe(0);
   });
 });

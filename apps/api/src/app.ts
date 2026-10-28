@@ -1,5 +1,6 @@
 // The Hono app. createApp(deps) is separate from index.ts so tests use app.request() in-process.
-import { Hono } from "hono";
+import { getConnInfo } from "@hono/node-server/conninfo";
+import { Hono, type Context } from "hono";
 import { requireUser } from "./auth";
 import type { AppEnv, Deps } from "./deps";
 import { errorResponse } from "./http";
@@ -13,6 +14,26 @@ import { media } from "./routes/media";
 import { nights } from "./routes/nights";
 import { blocks } from "./routes/safety";
 import { shots } from "./routes/shots";
+
+/**
+ * The per-IP bucket key (code review R2-1). Behind our own proxy (TRUST_PROXY=1) the client IP is
+ * the *rightmost* X-Forwarded-For entry (the one our proxy appended; everything left of it is
+ * client-controlled). Otherwise it's the socket's remote address.
+ */
+export function clientKey(c: Context<AppEnv>): string {
+  if (process.env.TRUST_PROXY === "1") {
+    const hops = (c.req.header("x-forwarded-for") ?? "")
+      .split(",")
+      .map((h) => h.trim())
+      .filter(Boolean);
+    if (hops.length) return hops[hops.length - 1]!;
+  }
+  try {
+    return getConnInfo(c).remote.address ?? "unknown";
+  } catch {
+    return "in-process"; // app.request() in tests has no socket
+  }
+}
 
 export function createApp(deps: Deps) {
   const app = new Hono<AppEnv>();
@@ -32,11 +53,7 @@ export function createApp(deps: Deps) {
       name: "ip",
       capacity: 300,
       refillPerSec: 5,
-      // Only trust X-Forwarded-For behind a known proxy (code review #12).
-      key: (c) =>
-        process.env.TRUST_PROXY === "1"
-          ? (c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "direct")
-          : "direct",
+      key: clientKey,
     }),
   );
 

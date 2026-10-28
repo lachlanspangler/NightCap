@@ -101,3 +101,23 @@ describe("code review M1 regressions", () => {
     );
   });
 });
+
+describe("code review M1 round 2", () => {
+  it("R2-2 re-entering your own night's code takes you back to it", async () => {
+    const t = await testApp();
+    const { users, crew: c } = await crew(t, ["Maya"]);
+    const night = (await t.req("POST", `/crews/${c.id}/nights`, { token: users[0]!.token, json: {} })).body
+      .night;
+    const r = await t.req("POST", "/nights/join", { token: users[0]!.token, json: { code: night.code } });
+    expect(r.status).toBe(200);
+    expect(r.body.night.id).toBe(night.id);
+  });
+  it("R2-1 the IP key ignores client-written X-Forwarded-For hops", async () => {
+    const { clientKey } = await import("../src/app");
+    const fake = (xff: string) => ({ req: { header: () => xff } }) as never;
+    process.env.TRUST_PROXY = "1";
+    expect(clientKey(fake("6.6.6.6, 10.0.0.9"))).toBe("10.0.0.9");
+    delete process.env.TRUST_PROXY;
+    expect(clientKey(fake("6.6.6.6"))).toBe("in-process");
+  });
+});

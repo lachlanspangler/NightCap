@@ -45,7 +45,23 @@ nights.post("/join", async (c) => {
   const normal = normalizeCode(code);
   if (!normal) fail(422, "invalid", "Night codes are 4 digits.");
   // Checked before the code is looked at, so this answer says nothing about the code (review #4).
-  if (await liveNightOf(deps, userId)) fail(409, "already_in_live_night");
+  const current = await liveNightOf(deps, userId);
+  if (current) {
+    // Re-scanning your own night's code just takes you back to it (review R2-2); any other code
+    // gets "you're already out", which still says nothing about that code.
+    const own = await asUser(
+      deps.db,
+      userId,
+      async (tx) =>
+        (
+          await tx.query<{ join_code: string | null }>(`select join_code from nights where id = $1`, [
+            current.id,
+          ])
+        ).rows[0]?.join_code,
+    );
+    if (own === normal) return c.json({ night: await nightView(deps, userId, current.id) });
+    fail(409, "already_in_live_night");
+  }
   const id = await asUser(
     deps.db,
     userId,

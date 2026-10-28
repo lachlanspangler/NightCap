@@ -419,6 +419,7 @@ city.post("/tables/:id/leave", async (c) => {
   const userId = c.get("userId");
   // Leaving revokes everything (code review #6): the seat, the names, and the table's roll.
   const tableId = param(c, "id");
+  const keys: string[] = [];
   await asService(deps.db, async (tx) => {
     const t = (
       await tx.query<{ night_id: string | null }>(
@@ -428,8 +429,16 @@ city.post("/tables/:id/leave", async (c) => {
     ).rows[0];
     if (!t) return;
     await tx.query(`delete from city_table_members where table_id = $1 and user_id = $2`, [tableId, userId]);
-    if (t.night_id)
+    if (t.night_id) {
       await tx.query(`delete from night_members where night_id = $1 and user_id = $2`, [t.night_id, userId]);
+      // Your photos leave with you (review R2-3).
+      const gone = await tx.query<{ media_key: string }>(
+        `update shots set status = 'deleted' where night_id = $1 and author_id = $2 and status <> 'deleted' returning media_key`,
+        [t.night_id, userId],
+      );
+      keys.push(...gone.rows.map((r) => r.media_key));
+    }
   });
+  for (const k of keys) await deps.media.delete(k).catch(() => undefined);
   return c.json({ ok: true });
 });
