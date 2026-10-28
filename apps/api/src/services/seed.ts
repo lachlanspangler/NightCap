@@ -322,7 +322,7 @@ export async function seedDemo(deps: Deps): Promise<{ shots: number }> {
       if (who !== s.author && i % 3 !== 2)
         await tx.query(
           `insert into reactions (shot_id, user_id, emoji) values ($1, $2, $3) on conflict do nothing`,
-          [s.id, demoId(who), ["🔥", "😂", "😍", "🥴", "🫶"][i % 5]],
+          [s.id, demoId(who), ["🔥", "😂", "😍", "🌅", "🫶"][i % 5]],
         );
     }
     await tx.query(

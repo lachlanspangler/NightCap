@@ -1,11 +1,13 @@
 // The morning review ("hold until morning"): your own shots, one at a time, two huge buttons.
 // Untouched shots are kept; tossed ones are never revealed and their media is deleted at the unlock.
+// Toss is never instant (design review M1 #5): it waits out an undo toast (8s at night).
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, mediaUrl } from "../../src/api";
+import { useUndo } from "../../src/components/Undo";
 import { BigButton, ErrorNote, Gap, IconButton, Loading, Txt } from "../../src/components/ui";
 import { haptic } from "../../src/haptics";
 import { night as N } from "../../src/theme";
@@ -16,43 +18,64 @@ import { useMe } from "../../src/useMe";
 export default function Review() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const q = useApi<{ night: Night }>(`/nights/${id}`);
-  const { scale } = useMe();
+  const { me, scale } = useMe();
+  const withUndo = useUndo();
   const [i, setI] = useState(0);
-  const [history, setHistory] = useState<{ id: string; prev: string }[]>([]);
+  const [tossed, setTossed] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const n = q.data?.night;
-  if (!n)
+  if (!n) {
     return (
       <View style={{ flex: 1, backgroundColor: N.bg }}>
         {q.error ? <ErrorNote message={q.error.message} /> : <Loading />}
       </View>
     );
+  }
   const mine = n.shots.filter((s) => s.mine);
   const shot = mine[i];
   const locked = n.phase === "unlocked";
+  const tossedCount = mine.filter((s) => tossed.has(s.id) || s.status === "discarded").length;
 
-  const decide = async (status: "kept" | "discarded") => {
+  const keep = async () => {
     if (!shot) return;
     setError(null);
-    status === "discarded" ? haptic.warn() : haptic.tap();
+    haptic.tap();
+    const at = i;
+    setI(at + 1);
     try {
-      await api("PATCH", `/shots/${shot.id}`, { status });
-      setHistory((h) => [...h, { id: shot.id, prev: shot.status }]);
-      setI((x) => x + 1);
+      await api("PATCH", `/shots/${shot.id}`, { status: "kept" });
     } catch (e) {
       setError((e as Error).message);
+      setI(at);
     }
   };
-  const undo = async () => {
-    const last = history.at(-1);
-    if (!last) return;
-    try {
-      await api("PATCH", `/shots/${last.id}`, { status: last.prev === "discarded" ? "discarded" : "kept" });
-      setHistory((h) => h.slice(0, -1));
-      setI((x) => Math.max(0, x - 1));
-    } catch (e) {
-      setError((e as Error).message);
-    }
+  const toss = () => {
+    if (!shot) return;
+    setError(null);
+    haptic.warn();
+    const at = i;
+    const target = shot.id;
+    setTossed((t) => new Set(t).add(target));
+    setI(at + 1);
+    withUndo(
+      "Tossed. Nobody will ever see it.",
+      async () => {
+        try {
+          await api("PATCH", `/shots/${target}`, { status: "discarded" });
+        } catch (e) {
+          setError((e as Error).message);
+        }
+      },
+      me?.nightMode ?? true,
+      () => {
+        setTossed((t) => {
+          const next = new Set(t);
+          next.delete(target);
+          return next;
+        });
+        setI(at);
+      },
+    );
   };
 
   return (
@@ -66,14 +89,13 @@ export default function Review() {
           onPress={() => router.back()}
         />
         <View style={{ flex: 1 }}>
-          <Txt v="label">Your shots from last night</Txt>
+          <Txt v="label" scale={scale}>
+            Your shots from last night
+          </Txt>
           <Txt v="small" tone="textDim">
             {shot ? `${i + 1} of ${mine.length} · only you can see these` : `All ${mine.length} looked at`}
           </Txt>
         </View>
-        {history.length > 0 && (
-          <IconButton testID="review-undo" label="Undo last choice" glyph="↶" scale={scale} onPress={undo} />
-        )}
       </View>
       <Gap h={12} />
       {shot ? (
@@ -123,21 +145,21 @@ export default function Review() {
               </Txt>
             </View>
           ) : (
-            <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16, paddingBottom: 8 }}>
+            <View style={{ flexDirection: "row", gap: 24, paddingHorizontal: 16, paddingBottom: 8 }}>
               <BigButton
                 testID="review-toss"
                 label="Toss"
                 kind="danger"
                 scale={scale}
                 style={{ flex: 1 }}
-                onPress={() => decide("discarded")}
+                onPress={toss}
               />
               <BigButton
                 testID="review-keep"
                 label="Keep"
                 scale={scale}
-                style={{ flex: 1 }}
-                onPress={() => decide("kept")}
+                style={{ flex: 1.6 }}
+                onPress={keep}
               />
             </View>
           )}
@@ -146,9 +168,9 @@ export default function Review() {
         <View style={{ flex: 1, justifyContent: "center", padding: 24 }}>
           <Txt v="title">Done.</Txt>
           <Gap h={6} />
-          <Txt v="body" tone="textDim">
-            {mine.filter((s) => s.status === "discarded").length
-              ? `You tossed ${mine.filter((s) => s.status === "discarded").length}. Nobody will ever see those.`
+          <Txt v="body" tone="textDim" scale={scale}>
+            {tossedCount
+              ? `You tossed ${tossedCount}. Nobody will ever see ${tossedCount === 1 ? "it" : "those"}.`
               : "Keeping all of them. Future you approves."}
           </Txt>
           <Gap h={20} />

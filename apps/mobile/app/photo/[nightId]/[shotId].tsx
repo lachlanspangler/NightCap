@@ -3,6 +3,7 @@
 import { REACTIONS, REPORT_LABELS, REPORT_REASONS, type ReportReason } from "@nightcap/core";
 import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import * as MediaLibrary from "expo-media-library";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -31,7 +32,7 @@ export default function Photo() {
   const n = q.data?.night;
   if (!n)
     return (
-      <View style={{ flex: 1, backgroundColor: "#000" }}>
+      <View style={{ flex: 1, backgroundColor: N.bg }}>
         {q.error ? <ErrorNote message={q.error.message} /> : <Loading />}
       </View>
     );
@@ -98,7 +99,11 @@ export default function Photo() {
     }, "Saved to your photos ✓");
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#000" }} testID="photo">
+    <View style={{ flex: 1, backgroundColor: N.bg }} testID="photo">
+      <LinearGradient
+        colors={["rgba(255,182,150,0.22)", "rgba(12,10,20,0)"]}
+        style={{ position: "absolute", left: 0, right: 0, top: 0, height: 320 }}
+      />
       <Image
         source={{ uri: mediaUrl(shot.url)!, cacheKey: `shot-${shot.id}` }}
         style={StyleSheet.absoluteFill}
@@ -198,6 +203,16 @@ export default function Photo() {
           )}
           {error && <ErrorNote message={error} />}
 
+          {!shot.mine && !myTag && !sheet && (
+            <BigButton
+              testID="photo-hide-visible"
+              label="That's me, hide it"
+              kind="secondary"
+              primary={false}
+              scale={scale}
+              onPress={hide}
+            />
+          )}
           {sheet === "more" && (
             <View style={{ backgroundColor: "rgba(23,19,31,0.97)", borderRadius: 24, padding: 14, gap: 10 }}>
               {!shot.mine && (

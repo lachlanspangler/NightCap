@@ -27,8 +27,10 @@ export const dawn = {
   text: "#24182A",
   textDim: "#5E4A60",
   textFaint: "#6F5B71",
-  accent: "#C2412F",
-  accentInk: "#FFFFFF",
+  // Dawn primary is an ink pill with cream text (design review M1 #7: red read as destructive).
+  accent: "#24182A",
+  accentInk: "#FFF5EE",
+  warm: "#B4462F",
   gradient: ["#FFD3B4", "#FFB6C9", "#D9C5F6"] as const,
 } as const;
 

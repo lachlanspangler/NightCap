@@ -63,3 +63,13 @@ describe("transactions", () => {
     await db.close();
   });
 });
+
+describe("0004 reaction set", () => {
+  it("🌅 is in, 🥴 is out", async () => {
+    const { pg } = await createPglite();
+    const cons = await pg.query<{ def: string }>(`select pg_get_constraintdef(oid) as def from pg_constraint where conname = 'reactions_emoji_check'`);
+    expect(cons.rows[0]!.def).toContain("🌅");
+    expect(cons.rows[0]!.def).not.toContain("🥴");
+    await pg.close();
+  });
+});

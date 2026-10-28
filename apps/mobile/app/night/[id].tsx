@@ -67,6 +67,44 @@ function DevViewfinder({ frame }: { frame: number }) {
   );
 }
 
+/** A labelled camera control: words beat glyphs at 1am (design review M1 #10). */
+function ChromePill({
+  label,
+  a11y,
+  onPress,
+  height,
+  testID,
+}: {
+  label: string;
+  a11y: string;
+  onPress: () => void;
+  height: number;
+  testID?: string;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={a11y}
+      onPress={() => {
+        haptic.tap();
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        minHeight: height,
+        paddingHorizontal: 16,
+        borderRadius: 999,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(12,10,20,0.62)",
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <Text style={{ fontFamily: fonts.bodyBold, color: N.text, fontSize: 16 }}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export default function LiveNight() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const q = useApi<{ night: Night }>(`/nights/${id}`, { pollMs: 8_000 });
@@ -195,11 +233,11 @@ export default function LiveNight() {
         {/* Top: who's here, the code, and a way out. */}
         <View style={{ paddingHorizontal: 16, paddingTop: 6 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <IconButton
+            <ChromePill
               testID="night-close"
-              label="Back to home"
-              glyph="✕"
-              scale={scale}
+              label="‹ Home"
+              a11y="Back to home"
+              height={scale.target}
               onPress={() => router.replace("/(tabs)")}
             />
             <View style={{ flex: 1 }}>
@@ -360,21 +398,21 @@ export default function LiveNight() {
                 />
               )}
               {n.me.canEnd && (
-                <IconButton
+                <ChromePill
                   testID="night-end"
-                  label="End the night"
-                  glyph="☾"
-                  scale={scale}
+                  label="Wrap up"
+                  a11y="Wrap up the night"
+                  height={scale.target}
                   onPress={() => setShowEnd(true)}
                 />
               )}
             </View>
           </View>
           <Gap h={8} />
-          <Text style={{ fontFamily: fonts.body, color: N.textDim, fontSize: 13, textAlign: "center" }}>
+          <Text style={{ fontFamily: fonts.bodySemi, color: N.textDim, fontSize: 16, textAlign: "center" }}>
             {others > 0
-              ? "Nobody sees anything until the morning. Not even you."
-              : "Snap away. It all develops in the morning."}
+              ? "Nobody else sees a thing until morning."
+              : "Snap away. Nobody else sees a thing until morning."}
           </Text>
         </View>
       </SafeAreaView>

@@ -120,7 +120,7 @@ export function canDeleteShot(actorId: string, authorId: string): boolean {
   return actorId === authorId;
 }
 
-export const REACTIONS = ["🔥", "😂", "😍", "🥴", "🫶"] as const;
+export const REACTIONS = ["🔥", "😂", "😍", "🌅", "🫶"] as const;
 export type Reaction = (typeof REACTIONS)[number];
 export const isReaction = (s: string): s is Reaction => (REACTIONS as readonly string[]).includes(s);
 

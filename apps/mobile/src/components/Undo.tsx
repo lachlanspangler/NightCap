@@ -10,11 +10,12 @@ interface Pending {
   id: number;
   message: string;
   run: () => Promise<void> | void;
+  onUndo?: () => void;
   timer: ReturnType<typeof setTimeout>;
 }
 
 const Ctx = createContext<{
-  withUndo(message: string, run: () => Promise<void> | void, nightMode: boolean): void;
+  withUndo(message: string, run: () => Promise<void> | void, nightMode: boolean, onUndo?: () => void): void;
 } | null>(null);
 
 export function UndoProvider({ children }: { children: ReactNode }) {
@@ -24,28 +25,33 @@ export function UndoProvider({ children }: { children: ReactNode }) {
 
   const ref = useRef<Pending | null>(null);
 
-  const withUndo = useCallback((message: string, run: () => Promise<void> | void, nightMode: boolean) => {
-    const prev = ref.current;
-    if (prev) {
-      clearTimeout(prev.timer);
-      void prev.run(); // a new action commits the previous one
-    }
-    const id = ++seq.current;
-    const timer = setTimeout(() => {
-      if (ref.current?.id === id) {
-        ref.current = null;
-        setPending(null);
+  const withUndo = useCallback(
+    (message: string, run: () => Promise<void> | void, nightMode: boolean, onUndo?: () => void) => {
+      const prev = ref.current;
+      if (prev) {
+        clearTimeout(prev.timer);
+        void prev.run(); // a new action commits the previous one
       }
-      void run();
-    }, undoWindowMs(nightMode));
-    ref.current = { id, message, run, timer };
-    setPending(ref.current);
-  }, []);
+      const id = ++seq.current;
+      const timer = setTimeout(() => {
+        if (ref.current?.id === id) {
+          ref.current = null;
+          setPending(null);
+        }
+        void run();
+      }, undoWindowMs(nightMode));
+      ref.current = { id, message, run, onUndo, timer };
+      setPending(ref.current);
+    },
+    [],
+  );
 
   const undo = () => {
     if (!ref.current) return;
     clearTimeout(ref.current.timer);
+    const undone = ref.current;
     ref.current = null;
+    undone.onUndo?.();
     haptic.tap();
     setPending(null);
   };

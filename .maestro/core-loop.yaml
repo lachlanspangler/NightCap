@@ -135,12 +135,19 @@ name: core loop
     id: "dev-close"
 - extendedWaitUntil:
     visible:
+      id: "reveal-gate"
+    timeout: 30000
+- takeScreenshot: core-09-reveal-gate
+- longPressOn:
+    id: "hold-to-develop"
+- extendedWaitUntil:
+    visible:
       text: "It developed."
     timeout: 30000
-- takeScreenshot: core-09-reveal-start
+- takeScreenshot: core-10-developing
 - waitForAnimationToEnd:
-    timeout: 6000
-- takeScreenshot: core-10-album
+    timeout: 8000
+- takeScreenshot: core-11-album
 - tapOn:
     id: "shot-1"
 - extendedWaitUntil:
@@ -149,6 +156,6 @@ name: core loop
     timeout: 15000
 - tapOn:
     id: "react-🔥"
-- takeScreenshot: core-11-photo
+- takeScreenshot: core-12-photo
 - tapOn:
     id: "photo-close"
