@@ -1,0 +1,31 @@
+{
+  "name": "nightcap",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NightCap: the album from last night. Friends snap into one shared roll; it develops the morning after.",
+  "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/db",
+    "apps/api"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "typecheck": "tsc -p packages/core && tsc -p packages/db && tsc -p apps/api",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^20.19.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  }
+}

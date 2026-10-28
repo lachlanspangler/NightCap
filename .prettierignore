@@ -1,0 +1,10 @@
+node_modules
+coverage
+.data
+.run
+.expo
+docs/IDEAS.md
+docs/ideas_ledger.json
+package-lock.json
+apps/mobile/ios
+apps/mobile/android
