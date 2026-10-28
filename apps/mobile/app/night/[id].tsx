@@ -100,7 +100,9 @@ function ChromePill({
         opacity: pressed ? 0.7 : 1,
       })}
     >
-      <Text style={{ fontFamily: fonts.bodyBold, color: N.text, fontSize: 16 }}>{label}</Text>
+      <Text numberOfLines={1} style={{ fontFamily: fonts.bodyBold, color: N.text, fontSize: 16 }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -334,7 +336,7 @@ export default function LiveNight() {
             </View>
           )}
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <View style={{ width: 96 }} accessibilityLabel={`${left} shots left`}>
+            <View style={{ width: 112 }} accessibilityLabel={`${left} shots left`}>
               <Animated.Text
                 testID="shots-left"
                 style={{
@@ -388,7 +390,7 @@ export default function LiveNight() {
                 />
               </Pressable>
             )}
-            <View style={{ width: 96, alignItems: "flex-end", gap: 10 }}>
+            <View style={{ width: 112, alignItems: "flex-end", gap: 10 }}>
               {!useDevViewfinder && (
                 <IconButton
                   label="Flip camera"

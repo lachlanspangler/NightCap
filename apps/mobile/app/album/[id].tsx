@@ -91,7 +91,11 @@ function Header({ n, mode }: { n: Night; mode: "night" | "dawn" }) {
         </Txt>
         <Txt v="heading" mode={mode} numberOfLines={1}>
           {mode === "dawn"
-            ? new Date(n.startedAt).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+            ? new Date(n.startedAt).toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })
             : (n.title ?? (n.kind === "moment" ? "Nightcap" : "Last night"))}
         </Txt>
       </View>
@@ -505,7 +509,7 @@ function Unlocked({ n }: { n: Night }) {
               v="label"
               mode="dawn"
               tone="textDim"
-            >{`${n.shots.length} photo${n.shots.length === 1 ? "" : "s"} from ${authors} of you · ${new Date(n.startedAt).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}${n.venue ? ` · ${n.venue}` : ""}`}</Txt>
+            >{`${n.shots.length} photo${n.shots.length === 1 ? "" : "s"} from ${authors} of you${n.venue ? ` · ${n.venue}` : ""}`}</Txt>
             {n.unlockReason === "everyone_ready" && (
               <>
                 <Gap h={8} />

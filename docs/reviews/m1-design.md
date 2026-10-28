@@ -41,3 +41,30 @@ The night half is real. The type, the amber, the code and the shutter already fe
 3. **The camera's "big and few" core.** Fraunces "21 left", a 96pt amber shutter, and a hold-to-end with "Keep holding…" feedback. It feels like a disposable camera without Dispo's clutter.
 
 Sign-off: no — needs fixes 1..6
+
+## Round 2
+
+Inputs: new core-01…12 and core-loop.mp4 (I stepped through the reveal frame by frame at 2fps). Fixes 1–7 and 10 have landed. The morning is now the best part of the app, which is how it should be.
+
+### Updated grades
+
+| Screen | R1 | R2 | Why |
+| --- | --- | --- | --- |
+| 03/04 Camera | B | B+ | The hint is honest now and "‹ Home" is clear. "Wrap up" breaks onto two lines and has no visible pill, so it reads as a caption, not a 56pt target. |
+| 06 Developing 3am | C | A- | The 64pt "6h 12m" hero, then "Get some sleep." above the fold. Right hierarchy, right voice. "not up yet" fixes the tone. |
+| 07 Developing 7am | B- | A- | The sticky "I'm up. I'm good." bar sits in the thumb zone and nothing gets clipped. |
+| 08 Review | B | B+ | Keep is clearly the primary, there's a real gap, and Toss can be undone. The top toast is the right call given what Maestro caught, but undo is now out of thumb reach. |
+| 09 Reveal gate | — | A | "Good morning. Last night is ready." and "Nobody's seen them yet" are exactly right. The hold fills amber, the sky goes ink → dawn, and the frames develop in order. This is the peak we wanted. |
+| 10/11 Album | B- | B+ | The ink "Save all" fits the dawn palette. The date shows twice (header and meta line). The demo has only one divider ("AFTER 2 AM"), so the grid still looks grouped by author. |
+| 12 Photo | C+ | B | The ink background with a peach glow fixes the palette. 🌅 renders as a framed picture and reads as an image, not a reaction. I couldn't check "That's me, hide it" because this screenshot is your own photo; please capture it on a friend's photo. |
+
+### Still open (none block sign-off)
+
+1. **The reveal hard-cuts from layout to layout.** On release, the tilted 4-column contact sheet snaps to the straight 3-column grid, and then the frames develop. Animate the frames from their contact-sheet positions into the grid (shared layout, about 400ms), or use the 3-column grid on the gate too, so each frame develops in place. Also hide "Keep holding. It's worth it." until the press starts.
+2. **The demo seed undercuts fix 2.** Spread the demo `taken_at` values from about 10 PM to 3 AM so the dividers ("10 PM", "11 PM", "AFTER 2 AM") show up and the grid interleaves authors. The demo is the pitch.
+3. **Album header:** drop the date from the meta line, so it reads "12 photos from 4 of you · Everyone was up early" and the chip goes.
+4. **Camera "Wrap up":** one line, filled ink pill, at least 56pt, same style as "‹ Home".
+5. **Reactions:** swap 🌅 for an emoji that renders as a glyph (☀️ or 🫶), or draw custom reaction glyphs.
+6. **Carried over from round 1:** #8 (18pt night body floor beyond the camera hint) and #9 (home has no live/developing night card or primary action, plus emoji tab icons). Both are polish for M2, not loop blockers.
+
+Sign-off: yes — the core loop, from shutter to reveal, now meets the bar. Fix open items 1–4 before any external demo.
