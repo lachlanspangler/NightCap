@@ -676,3 +676,38 @@ describe("host-only RPCs refuse guests (NULL-safe, privacy review fix)", () => {
     ).toBe("ok");
   });
 });
+
+describe("night_bans (privacy round 2)", () => {
+  it("removal is a ban: no rejoin by crew or code, and the code rotates", async () => {
+    const s = computeNightSchedule(NOW, "America/Chicago");
+    const id = await as(
+      maya,
+      async (tx) =>
+        (
+          await tx.query<{ id: string }>(
+            `select start_night($1, null, null, 'America/Chicago', $2, $3, $4, $5, '2468', 24) as id`,
+            [crew, NOW, s.autoEndAt, s.unlockAt, s.earliestUnlockAt],
+          )
+        ).rows[0]!.id,
+    );
+    await as(theo, (tx) => tx.query(`select join_crew_night($1, $2)`, [id, NOW]));
+    await as(maya, (tx) => tx.query(`select remove_from_night($1, $2, $3)`, [id, theo, NOW]));
+    expect(
+      (
+        await service(db, `select count(*)::int as n from night_bans where night_id = $1 and user_id = $2`, [
+          id,
+          theo,
+        ])
+      ).rows[0],
+    ).toEqual({ n: 1 });
+    expect(await code(as(theo, (tx) => tx.query(`select join_crew_night($1, $2)`, [id, NOW])))).toBe(
+      "unavailable",
+    );
+    const now = (await service(db, `select join_code from nights where id = $1`, [id])).rows[0] as {
+      join_code: string;
+    };
+    expect(now.join_code).not.toBe("2468");
+    expect((await q(theo, `select id from nights where id = $1`, [id])).rows).toEqual([]);
+    expect(await code(q(theo, `select * from night_bans`))).toBe("forbidden");
+  });
+});

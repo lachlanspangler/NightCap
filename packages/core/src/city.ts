@@ -139,10 +139,11 @@ function seat(
   // Hard rule (privacy review M3): a woman who came alone is never the only woman at a table of
   // 3+. Move her to a table with women, or swap her with a solo man there; otherwise waitlist her
   // (if her table can spare her). A woman who came with friends isn't alone, so this doesn't apply.
-  const women = (t: SignupBlock[]) => people(t).filter((p) => p.gender === "woman").length;
+  // "women" here means everyone who isn't a man: a solo woman or nonbinary person is never the only one.
+  const women = (t: SignupBlock[]) => people(t).filter((p) => p.gender === "woman" || p.gender === "nonbinary").length;
   const loneSolo = (t: SignupBlock[]) =>
     people(t).length >= 3 && women(t) === 1
-      ? t.find((b) => b.members.length === 1 && b.members[0]!.gender === "woman")
+      ? t.find((b) => b.members.length === 1 && (b.members[0]!.gender === "woman" || b.members[0]!.gender === "nonbinary"))
       : undefined;
   const fixLone = () => {
     for (const t of tables) {

@@ -41,8 +41,13 @@ describe("C1: you can remove and block where the threat is", () => {
     const r = await t.req("DELETE", `/nights/${night.id}/members/${creep!.id}`, { token: maya!.token });
     expect(r.status).toBe(200);
     expect(r.body.night.participants.map((p: { name: string }) => p.name)).not.toContain("Creep");
+    // R2-2: removal is a ban. They can't come back by crew or by the (rotated) code.
+    expect((await t.req("POST", `/nights/${night.id}/join`, { token: creep!.token })).status).toBe(404);
+    expect(
+      (await t.req("POST", "/nights/join", { token: creep!.token, json: { code: night.code } })).status,
+    ).toBe(404);
     t.clock.set("2026-10-31T15:01:00Z");
-    expect((await t.req("GET", `/nights/${night.id}`, { token: creep!.token })).body.night.shots).toEqual([]);
+    expect((await t.req("GET", `/nights/${night.id}`, { token: creep!.token })).status).toBe(404);
   });
   it("removing a crew member is never deferred, and takes them out of the crew's live night", async () => {
     const t = await testApp();
@@ -214,16 +219,19 @@ describe("H4: a subject can veto before anyone else sees it", () => {
     const night = await liveNight(t, maya!, crew.id, [theo!, jules!]);
     const shot = (await t.req("POST", `/nights/${night.id}/shots`, { token: maya!.token, form: photoForm() }))
       .body.shot;
-    expect(
-      (await t.req("POST", `/shots/${shot.id}/tags`, { token: maya!.token, json: { userId: theo!.id } }))
-        .status,
-    ).toBe(201);
-    // before the unlock: Theo (tagged) sees it privately, Jules doesn't
+    // R2-1: a tag mid-night shows nothing to anyone.
+    await t.req("POST", `/shots/${shot.id}/tags`, { token: maya!.token, json: { userId: theo!.id } });
+    expect((await t.req("GET", `/nights/${night.id}`, { token: theo!.token })).body.night.shots).toEqual([]);
+    // morning review (ended, not yet unlocked): the subject gets a private look
+    t.clock.set("2026-10-31T11:00:00Z");
     expect(
       (await t.req("GET", `/nights/${night.id}`, { token: theo!.token })).body.night.shots.map(
         (s: { id: string }) => s.id,
       ),
     ).toEqual([shot.id]);
+    expect((await t.req("GET", `/nights/${night.id}`, { token: jules!.token })).body.night.shots).toEqual([]);
+    // the subject can't pass it on before the unlock
+    await t.req("POST", `/shots/${shot.id}/tags`, { token: theo!.token, json: { userId: jules!.id } });
     expect((await t.req("GET", `/nights/${night.id}`, { token: jules!.token })).body.night.shots).toEqual([]);
     expect((await t.req("GET", "/me/tags", { token: theo!.token })).body.tags).toHaveLength(1);
     expect(
@@ -234,6 +242,57 @@ describe("H4: a subject can veto before anyone else sees it", () => {
     expect((await t.req("POST", `/shots/${shot.id}/hide`, { token: theo!.token })).status).toBe(200);
     t.clock.set("2026-10-31T15:01:00Z");
     expect((await t.req("GET", `/nights/${night.id}`, { token: jules!.token })).body.night.shots).toEqual([]);
+  });
+});
+
+describe("privacy round 2", () => {
+  it("R2-3: the blocker still sees the crew's night after the blocked person joins it", async () => {
+    const t = await testApp();
+    const { users, crew } = await crewOf(t, ["Maya", "Theo", "Ex"]);
+    const [maya, theo, ex] = users;
+    await t.req("POST", "/blocks", { token: maya!.token, json: { userId: ex!.id } });
+    const night = await liveNight(t, theo!, crew.id, [ex!]);
+    expect((await t.req("GET", `/crews/${crew.id}`, { token: maya!.token })).body.crew.liveNight?.id).toBe(
+      night.id,
+    );
+    expect((await t.req("GET", `/nights/${night.id}`, { token: ex!.token })).status).toBe(200); // Ex is in it
+  });
+  it("R2-5: a report survives the reporter deleting their account; you can report after leaving", async () => {
+    const t = await testApp({ now: "2026-10-31T17:00:00Z" });
+    const { users } = await crewOf(t, ["Maya", "Theo"]);
+    await t.req("POST", "/reports", {
+      token: users[1]!.token,
+      json: { userId: users[0]!.id, reason: "harassment" },
+    });
+    expect((await t.req("DELETE", "/me", { token: users[1]!.token })).body).toMatchObject({ deleted: true });
+    const r = await service(
+      t.db,
+      `select count(*)::int as n, bool_and(reporter_snapshot is not null) as snap from reports`,
+    );
+    expect(r.rows[0]).toEqual({ n: 1, snap: true });
+  });
+  it("R2-4: nudges skip blocked pairs end to end", async () => {
+    const t = await testApp({ now: "2026-10-28T17:00:00Z" });
+    await t.req("POST", "/dev/reseed");
+    const maya = (
+      await t.req("POST", "/dev/login", { json: { userId: "11111111-1111-4111-8111-111111111111" } })
+    ).body.token;
+    const theo = (
+      await t.req("POST", "/dev/login", { json: { userId: "22222222-2222-4222-8222-222222222222" } })
+    ).body.token;
+    await t.req("POST", "/blocks", { token: maya, json: { userId: "66666666-6666-4666-8666-666666666666" } });
+    await t.req("POST", "/blocks", { token: theo, json: { userId: "66666666-6666-4666-8666-666666666666" } });
+    const crews = (await t.req("GET", "/crews", { token: maya })).body.crews;
+    const college = crews.find((c: { kind: string }) => c.kind === "long_distance");
+    await t.req("GET", `/crews/${college.id}/moment`, { token: maya });
+    const sent = await service(
+      t.db,
+      `select n.to_user_id from nudges_sent n where n.about_user_id = '66666666-6666-4666-8666-666666666666'`,
+    );
+    for (const r of sent.rows as { to_user_id: string }[])
+      expect(["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"]).not.toContain(
+        r.to_user_id,
+      );
   });
 });
 

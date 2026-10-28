@@ -125,7 +125,18 @@ export async function runNudges(deps: Deps, crewId: string): Promise<number> {
       kind: r.kind,
       sentAt: r.sent_at,
     }));
+    const blockedPairs = new Set(
+      (
+        await tx.query<{ a: string; b: string }>(
+          `select b.blocker_id as a, b.blocked_id as b from blocks b
+           join crew_members x on x.user_id = b.blocker_id and x.crew_id = $1
+           join crew_members y on y.user_id = b.blocked_id and y.crew_id = $1`,
+          [crewId],
+        )
+      ).rows.map((r) => (r.a < r.b ? `${r.a}|${r.b}` : `${r.b}|${r.a}`)),
+    );
     const nudges = computeNudges({
+      blockedPairs,
       members: members.map((m) => ({ userId: m.user_id, joinedAt: m.joined_at, mutedUntil: m.muted_until })),
       closedMoments: closed,
       openMoment: open,

@@ -190,17 +190,13 @@ describe("formTables never seats a blocked pair, even inside one group", () => {
 });
 
 describe("no woman who came alone is the only woman at a table (privacy review M3)", () => {
+  // "Alone" = the only person at a table of 3+ who isn't a man, having signed up solo.
   const lone = (r: ReturnType<typeof formTables>, blocks: SignupBlock[]) =>
     r.tables.some((t) => {
-      const ws = t.userIds.filter(
-        (u) =>
-          blocks.find((b) => b.members.some((m) => m.userId === u))!.members.find((m) => m.userId === u)!
-            .gender === "woman",
-      );
-      const soloWoman =
-        ws.length === 1 &&
-        blocks.find((b) => b.members.some((m) => m.userId === ws[0]))!.members.length === 1;
-      return t.userIds.length >= 3 && soloWoman;
+      const blockOf = (u: string) => blocks.find((b) => b.members.some((m) => m.userId === u))!;
+      const g = (u: string) => blockOf(u).members.find((m) => m.userId === u)!.gender;
+      const nonMen = t.userIds.filter((u) => g(u) === "woman" || g(u) === "nonbinary");
+      return t.userIds.length >= 3 && nonMen.length === 1 && blockOf(nonMen[0]!).members.length === 1;
     });
   it("one woman among men is waitlisted, not seated alone", () => {
     const blocks = [solo("w", "woman"), ...["a", "b", "c", "d", "e"].map((m) => solo(m, "man"))];
