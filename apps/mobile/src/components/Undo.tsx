@@ -1,4 +1,5 @@
 // Undo toasts (DRUNK_UX): actions wait out an undo window before they run (8s at night, 5s by day).
+// Shown at the top: at the bottom it sat on the next primary button and caught the next tap.
 import { undoWindowMs } from "@nightcap/core";
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -62,7 +63,7 @@ export function UndoProvider({ children }: { children: ReactNode }) {
       {pending && (
         <View
           pointerEvents="box-none"
-          style={{ position: "absolute", left: 16, right: 16, bottom: insets.bottom + 16 }}
+          style={{ position: "absolute", left: 16, right: 16, top: insets.top + 8 }}
         >
           <View
             accessibilityLiveRegion="polite"
