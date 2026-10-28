@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, TextInput, View } from "react-native";
 import { api } from "../src/api";
+import { serverNow } from "../src/clock";
 import { BigButton, ErrorNote, Gap, IconButton, Screen, Txt } from "../src/components/ui";
 import { MOCK } from "../src/config";
 import { useSession } from "../src/session";
@@ -75,7 +76,7 @@ export default function Signup() {
 
   const submit = async () => {
     setError(null);
-    const age = checkAge(birthdate, new Date(), tz);
+    const age = checkAge(birthdate, serverNow(), tz);
     if (!age.ok) {
       setError(
         age.error === "under_21"

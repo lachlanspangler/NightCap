@@ -1,0 +1,17 @@
+# "One year ago tonight" for the local crew.
+appId: host.exp.Exponent
+name: on this night
+---
+- runFlow: util-as-maya.yaml
+- tapOn:
+    id: "crew-card-Night Owls"
+- scrollUntilVisible:
+    element:
+      id: "crew-recaps"
+- tapOn:
+    id: "crew-recaps"
+- extendedWaitUntil:
+    visible:
+      id: "on-this-night"
+    timeout: 15000
+- takeScreenshot: friends-04-on-this-night

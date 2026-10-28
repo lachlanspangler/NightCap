@@ -1,0 +1,72 @@
+# Effortless sharing: Maya starts a night; Priya (not in the crew) joins with the 4-digit code
+# said across the bar, lands straight in the camera, and only ever sees that night.
+appId: host.exp.Exponent
+name: sharing
+---
+- runFlow: util-as-maya.yaml
+- tapOn:
+    id: "crew-card-Night Owls"
+- tapOn:
+    id: "crew-start-night"
+- extendedWaitUntil:
+    visible:
+      id: "shutter"
+    timeout: 20000
+- tapOn:
+    id: "night-invite"
+- extendedWaitUntil:
+    visible:
+      id: "invite-code"
+    timeout: 15000
+- copyTextFrom:
+    id: "invite-code"
+- takeScreenshot: share-01-invite-qr
+- tapOn:
+    id: "invite-done"
+- tapOn:
+    id: "night-close"
+# Become Priya (Chicago, not in Night Owls) and join with the code.
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-as-priya"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 15000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      id: "home-join-code"
+    timeout: 20000
+- tapOn:
+    id: "home-join-code"
+- takeScreenshot: share-02-keypad
+- tapOn:
+    id: "key-${maestro.copiedText.charAt(0)}"
+- tapOn:
+    id: "key-${maestro.copiedText.charAt(1)}"
+- tapOn:
+    id: "key-${maestro.copiedText.charAt(2)}"
+- tapOn:
+    id: "key-${maestro.copiedText.charAt(3)}"
+- extendedWaitUntil:
+    visible:
+      id: "shutter"
+    timeout: 20000
+- assertVisible:
+    text: "2 in the roll|.* in the roll"
+- tapOn:
+    id: "shutter"
+- takeScreenshot: share-03-guest-camera
+- tapOn:
+    id: "night-close"
+- extendedWaitUntil:
+    visible:
+      id: "home-live"
+    timeout: 20000
+# A guest never sees the crew: no Night Owls card for Priya.
+- assertNotVisible:
+    id: "crew-card-Night Owls"
+- takeScreenshot: share-04-guest-home

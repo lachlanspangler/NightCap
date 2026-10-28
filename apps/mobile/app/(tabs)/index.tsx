@@ -84,6 +84,27 @@ export default function Home() {
           </>
         )}
 
+        {!live && me.liveNight && (
+          <>
+            <Card
+              testID="home-live"
+              label="Open the camera"
+              onPress={() => router.push(`/night/${me.liveNight!.id}`)}
+              style={{ borderColor: night.amber, backgroundColor: "#22180F" }}
+            >
+              <Pill text="● LIVE NOW" />
+              <Gap h={10} />
+              <Txt v="heading" scale={scale}>
+                {me.liveNight.title ?? "You're in tonight's roll"}
+              </Txt>
+              <Txt v="label" tone="textDim">
+                Tap for the camera. You&apos;ll only ever see this night.
+              </Txt>
+            </Card>
+            <Gap h={14} />
+          </>
+        )}
+
         {joinable.map((c) => (
           <View key={c.id}>
             <Card

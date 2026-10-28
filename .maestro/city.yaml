@@ -1,0 +1,61 @@
+# Meet people in your city, safely: sign up for tonight's Trivia Table, the table is revealed 2h
+# before (first names + a fun line, no DMs), the table's roll, then keep in touch (mutual yes).
+appId: host.exp.Exponent
+name: city nights
+---
+- runFlow: util-as-maya.yaml
+- tapOn:
+    text: "City Nights"
+- extendedWaitUntil:
+    visible:
+      id: "event-trivia"
+    timeout: 20000
+- takeScreenshot: city-01-list
+- tapOn:
+    id: "event-trivia"
+- extendedWaitUntil:
+    visible:
+      id: "city-signup"
+    timeout: 15000
+- takeScreenshot: city-02-event
+- tapOn:
+    id: "city-signup"
+- extendedWaitUntil:
+    visible:
+      id: "city-waiting"
+    timeout: 15000
+- takeScreenshot: city-03-waiting
+# An hour later: 2h before start, the table is revealed.
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-jump-hour"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 15000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      id: "city-table"
+    timeout: 40000
+- takeScreenshot: city-04-table
+- assertVisible:
+    id: "city-share-plan"
+# The morning after: keep in touch?
+- tapOn:
+    id: "dev-pill"
+- tapOn:
+    id: "dev-jump-unlock"
+- extendedWaitUntil:
+    visible:
+      id: "dev-note"
+    timeout: 15000
+- tapOn:
+    id: "dev-close"
+- extendedWaitUntil:
+    visible:
+      text: "Keep in touch\\?.*"
+    timeout: 40000
+- takeScreenshot: city-05-keep-in-touch

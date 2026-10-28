@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScrollView, Share, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../src/api";
+import { serverNow } from "../../src/clock";
 import { useCountdown } from "../../src/components/Countdown";
 import {
   Avatar,
@@ -54,7 +55,7 @@ export default function EventScreen() {
     void Share.share({
       message: `Heads up: I'm at a NightCap City Night: ${e.title} at ${e.venue}${e.area ? ` (${e.area})` : ""}, ${when}. I'll text you after.`,
     });
-  const ended = Date.parse(e.startsAt) + 3 * 3_600_000 < Date.now();
+  const ended = Date.parse(e.startsAt) + 3 * 3_600_000 < serverNow().getTime();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: night.bg }} testID="city-event">

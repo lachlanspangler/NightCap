@@ -1,0 +1,40 @@
+# Consent: Theo tagged Maya in two photos at Jules's birthday. Her call: keep, untag, or hide.
+appId: host.exp.Exponent
+name: consent
+---
+- runFlow: util-as-maya.yaml
+- tapOn:
+    id: "home-tags"
+- extendedWaitUntil:
+    visible:
+      text: "You're in these"
+    timeout: 15000
+- takeScreenshot: consent-01-tags
+- tapOn:
+    text: "Theo tagged you"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "tag-prompt"
+    timeout: 15000
+- takeScreenshot: consent-02-tag-prompt
+- tapOn:
+    id: "tag-hide"
+- extendedWaitUntil:
+    visible:
+      id: "undo"
+    timeout: 10000
+- takeScreenshot: consent-03-hide-undo
+- tapOn:
+    id: "undo"
+- assertVisible:
+    id: "tag-prompt"
+- tapOn:
+    id: "tag-untag"
+- extendedWaitUntil:
+    notVisible:
+      id: "tag-prompt"
+    timeout: 10000
+- tapOn:
+    id: "photo-more"
+- takeScreenshot: consent-04-more

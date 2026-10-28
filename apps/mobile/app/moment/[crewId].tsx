@@ -93,7 +93,7 @@ export default function Moment() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: N.bg }} testID="moment">
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
-        <IconButton label="Back" glyph="‹" scale={scale} onPress={() => router.back()} />
+        <IconButton testID="moment-back" label="Back" glyph="‹" scale={scale} onPress={() => router.back()} />
         <Gap h={12} />
         <Pill text="WEEKLY NIGHTCAP" tone="plum" />
         <Gap h={8} />

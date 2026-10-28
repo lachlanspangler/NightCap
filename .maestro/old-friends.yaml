@@ -1,0 +1,39 @@
+# Old college friends: the long-distance crew, its weekly Nightcap, reunion countdown and recaps.
+appId: host.exp.Exponent
+name: old friends
+---
+- runFlow: util-as-maya.yaml
+- scrollUntilVisible:
+    element:
+      id: "crew-card-Carleton '22"
+- tapOn:
+    id: "crew-card-Carleton '22"
+- extendedWaitUntil:
+    visible:
+      id: "crew-moment"
+    timeout: 15000
+- assertVisible:
+    id: "crew-reunion"
+- takeScreenshot: friends-01-crew
+- tapOn:
+    id: "crew-moment"
+- extendedWaitUntil:
+    visible:
+      id: "moment"
+    timeout: 15000
+- assertVisible:
+    text: "LAST TIME|TONIGHT'S NIGHTCAP"
+- takeScreenshot: friends-02-moment
+- tapOn:
+    id: "moment-back"
+- extendedWaitUntil:
+    visible:
+      id: "crew-recaps"
+    timeout: 15000
+- tapOn:
+    id: "crew-recaps"
+- extendedWaitUntil:
+    visible:
+      id: "recaps"
+    timeout: 15000
+- takeScreenshot: friends-03-recaps-college
