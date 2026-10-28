@@ -10,7 +10,8 @@ export interface Tag {
   status: TagStatus;
 }
 
-export type TagError = "not_participant" | "subject_not_participant" | "blocked" | "already_tagged";
+export type TagError =
+  "not_participant" | "subject_not_participant" | "blocked" | "already_tagged" | "subject_removed";
 
 /** Anyone in the night can tag another participant. A self-tag ("that's me") is approved immediately. */
 export function createTag(input: {
@@ -24,7 +25,9 @@ export function createTag(input: {
   if (!input.taggerIsParticipant) return err("not_participant");
   if (!input.subjectIsParticipant) return err("subject_not_participant");
   if (input.blockedEitherWay) return err("blocked");
-  if (input.existing && input.existing.status !== "removed") return err("already_tagged");
+  // A removed tag stays removed: the subject already said no, re-tagging would be a harassment vector.
+  if (input.existing?.status === "removed") return err("subject_removed");
+  if (input.existing) return err("already_tagged");
   return ok(input.taggerId === input.subjectId ? "approved" : "pending");
 }
 
@@ -41,10 +44,14 @@ export function respondToTag(
   return ok(action === "approve" ? "approved" : "removed");
 }
 
-/** Pending tags are visible only to the subject and the tagger: a pending tag never widens visibility. */
+/**
+ * Subjects always see their own tags (incl. removed: it's their decision). Pending tags are otherwise
+ * visible only to the tagger, so a pending tag never widens visibility. Approved tags follow the shot.
+ */
 export function canSeeTag(tag: Tag, viewerId: string, viewerCanSeeShot: boolean): boolean {
+  if (viewerId === tag.subjectId) return true;
   if (tag.status === "removed") return false;
-  if (tag.status === "pending") return viewerId === tag.subjectId || viewerId === tag.taggerId;
+  if (tag.status === "pending") return viewerId === tag.taggerId;
   return viewerCanSeeShot;
 }
 

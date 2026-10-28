@@ -39,14 +39,14 @@ describe("tags", () => {
       { error: "blocked" },
     );
   });
-  it("no duplicate live tags, but re-tagging after an untag is allowed", () => {
+  it("no duplicate tags, and no re-tagging after the subject removed it", () => {
     const t: Tag = { shotId: "s", subjectId: "theo", taggerId: "maya", status: "pending" };
     expect(createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: t })).toMatchObject({
       error: "already_tagged",
     });
     expect(
       createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: { ...t, status: "removed" } }),
-    ).toMatchObject({ ok: true });
+    ).toMatchObject({ error: "subject_removed" });
   });
   it("only the subject responds", () => {
     const t: Tag = { shotId: "s", subjectId: "theo", taggerId: "maya", status: "pending" };
@@ -64,7 +64,8 @@ describe("tags", () => {
     expect(canSeeTag(t, "jules", true)).toBe(false);
     expect(canSeeTag({ ...t, status: "approved" }, "jules", true)).toBe(true);
     expect(canSeeTag({ ...t, status: "approved" }, "jules", false)).toBe(false);
-    expect(canSeeTag({ ...t, status: "removed" }, "theo", true)).toBe(false);
+    expect(canSeeTag({ ...t, status: "removed" }, "theo", true)).toBe(true);
+    expect(canSeeTag({ ...t, status: "removed" }, "maya", true)).toBe(false);
   });
 });
 
