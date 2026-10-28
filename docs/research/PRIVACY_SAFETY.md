@@ -9,7 +9,7 @@
 | # | threat | example | mitigation |
 |---|---|---|---|
 | T1 | **Unwanted exposure of a subject** | an unflattering or compromising photo of you revealed to the group | morning review (author discards), **hide-me** (any tagged or claimed subject hides it from everyone but the author), never public |
-| T2 | **Leak beyond the group** | a photo forwarded or screenshotted to outsiders | friends-only; links need membership; no public URLs; signed media URLs expire in 10 min; screenshot detection (later, I-0xx). Honest copy: "people you're with can always screenshot" |
+| T2 | **Leak beyond the group** | a photo forwarded or screenshotted to outsiders | friends-only; links need membership; no public URLs; signed media URLs expire in 10 min; screenshot detection (later, I-062). Honest copy: "people you're with can always screenshot" |
 | T3 | **Location leaks / stalking** | EXIF GPS in a photo; "where they are tonight" | **no GPS stored**; EXIF/XMP stripped server-side before storage; venue is optional free text; no live map; City Night members never see each other's location |
 | T4 | **Harassment by an ex or creep** | someone joins your night by code to watch you | night codes expire at night end, can be rotated; host can remove anyone; **blocks are mutual invisibility** (can't join the same night via code, can't be seated at the same City Night table, don't see each other's shots) |
 | T5 | **Minors** | under-21s at bars; minors in photos | 21+ DOB gate at sign-up (ID verification stubbed, with a clear TODO); the City Nights gate needs "verified"; report category "minor in photo" → hidden pending review |

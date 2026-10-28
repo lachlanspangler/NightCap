@@ -2,7 +2,7 @@
 
 > Synthesis of widely cited friendship research (Dunbar's layers, Hall's hours-to-friendship work,
 > Fehr's friendship processes) and how long-distance groups use group chats, Locket, BeReal and
-> Retro. Not interviews. Validation is I-048.
+> Retro. Not interviews. Validation is I-072.
 
 ## What the research says (as commonly reported)
 - **Friendship takes time and decays without contact.** Jeffrey Hall's widely cited work (2018)

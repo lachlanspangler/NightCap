@@ -2,7 +2,7 @@
 
 > This is a model built from common patterns (group-chat behaviour, how the event-camera
 > products work, how people talk about "send me those"). It is not from interviews. Validating it
-> with 5 real friend groups is idea I-047. Every claim below turns into a product decision,
+> with 5 real friend groups is idea I-071. Every claim below turns into a product decision,
 > marked **→**.
 
 ## The timeline of a typical night (group of 4–8, ages 21–30)

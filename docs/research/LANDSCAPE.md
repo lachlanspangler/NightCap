@@ -65,7 +65,7 @@
 - **What didn't / limits:** content is single photos with no context, and the widget is the whole
   product. Without novelty, sending tapers off.
 - **For NightCap:** this is the long-distance pillar. A crew's latest album or Nightcap moment on
-  the home screen is a later idea (I-0xx). The lesson is ambient presence for old friends.
+  the home screen is a later idea (I-035). The lesson is ambient presence for old friends.
 
 ### Dispo (2019–; faded after 2021)
 - **What:** a disposable-camera app. Photos "develop" at 9am the next morning, and there are shared
