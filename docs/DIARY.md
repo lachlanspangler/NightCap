@@ -59,3 +59,21 @@ what it felt like.
 - **Decisions:** the Maestro flows use Expo Go (`host.exp.Exponent`) and `stopApp` before each run,
   because a running Expo Go keeps the old bundle. CI-mode Metro (no reload) is restarted after
   code changes; that keeps it predictable and light.
+
+## 2026-10-28 — Milestone 1 reviews: design critic (signed off in round 2)
+- **Round 1 (no sign-off):** the morning reveal had no ceremony; the album looked author-ordered;
+  the camera copy said "not even you" while review lets you see your own; the 3am screen had no
+  hero; Toss was one tap from Keep; the viewer was off-brand and hid consent behind "⋯"; the red
+  dawn primary looked destructive; glyph-only camera controls.
+- **Landed:** hold-to-develop gate (remembered per user) → sky ink→dawn over 3s → frames develop
+  in time order with haptics; hour dividers; one promise ("Nobody else sees a thing until
+  morning"); 64pt countdown hero + "Get some sleep" + sticky "I'm up. I'm good."; toss via an 8s
+  undo toast; ink viewer with a visible "That's me, hide it"; ink dawn primary; labelled pills;
+  🥴 out (never joke about drinking), ✨ in.
+- **Maestro caught one more:** the undo toast at the bottom covered Keep and ate the next tap →
+  toasts live at the top now. A person would have hit that too.
+- **Round 2: signed off.** Still open (polish, not blocking): the contact sheet should develop
+  in place instead of re-laying out; demo shots land in one hour bucket; 18pt floor for night
+  body text; home's 3am primary action.
+- **Found myself while waiting:** a hide disappeared with the hider's account (cascade), which
+  would re-reveal the photo → sticky `subject_hidden` (migration 0005), mirrored in core + fixture.
