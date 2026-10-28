@@ -33,7 +33,10 @@ export async function loadMe(deps: Deps, userId: string): Promise<MeRow | null> 
   });
 }
 
-export async function liveNightOf(deps: Deps, userId: string): Promise<{ id: string; crew_id: string | null; title: string | null } | null> {
+export async function liveNightOf(
+  deps: Deps,
+  userId: string,
+): Promise<{ id: string; crew_id: string | null; title: string | null } | null> {
   return asService(deps.db, async (tx) => {
     const r = await tx.query<{ id: string; crew_id: string | null; title: string | null }>(
       `select n.id, n.crew_id, n.title from night_members m join nights n on n.id = m.night_id

@@ -2,7 +2,12 @@
 import type { Context, MiddlewareHandler } from "hono";
 import type { AppEnv } from "./deps";
 
-export function rateLimit(opts: { capacity: number; refillPerSec: number; key: (c: Context<AppEnv>) => string | null; name: string }): MiddlewareHandler<AppEnv> {
+export function rateLimit(opts: {
+  capacity: number;
+  refillPerSec: number;
+  key: (c: Context<AppEnv>) => string | null;
+  name: string;
+}): MiddlewareHandler<AppEnv> {
   const buckets = new Map<string, { tokens: number; at: number }>();
   return async (c, next) => {
     const k = opts.key(c);

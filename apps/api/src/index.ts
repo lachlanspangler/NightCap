@@ -17,8 +17,12 @@ const log = (m: string) => console.log(`[nightcap-api] ${new Date().toISOString(
 
 async function main() {
   const config = loadConfig(undefined, () => randomBytes(32).toString("base64url"));
-  if (config.mode !== "mock") throw new Error("prod mode isn't wired in the prototype (postgres.js adapter + R2Store are stubs). See STATUS.md.");
-  if (config.jwtSecretEphemeral) log("DEV_JWT_SECRET missing: using an ephemeral secret (tokens die on restart). Run `make setup`.");
+  if (config.mode !== "mock")
+    throw new Error(
+      "prod mode isn't wired in the prototype (postgres.js adapter + R2Store are stubs). See STATUS.md.",
+    );
+  if (config.jwtSecretEphemeral)
+    log("DEV_JWT_SECRET missing: using an ephemeral secret (tokens die on restart). Run `make setup`.");
   log(`mock mode (missing for prod: ${config.missing.join(", ")})`);
 
   if (config.pgliteDir) await mkdir(config.pgliteDir, { recursive: true });
@@ -29,7 +33,10 @@ async function main() {
   const demoPhotos = async () => {
     if (!photoCache) {
       photoCache = existsSync(photosDir)
-        ? readdirSync(photosDir).filter((f) => /\.(jpg|png)$/.test(f)).sort().map((name) => ({ name, bytes: new Uint8Array(readFileSync(join(photosDir, name))) }))
+        ? readdirSync(photosDir)
+            .filter((f) => /\.(jpg|png)$/.test(f))
+            .sort()
+            .map((name) => ({ name, bytes: new Uint8Array(readFileSync(join(photosDir, name))) }))
         : [];
       if (!photoCache.length) log("no demo photos found: run `node scripts/gen-photos.mjs`");
     }
@@ -41,7 +48,11 @@ async function main() {
     devClock,
     media: config.r2 ? new R2Store(config.r2) : new LocalDiskStore(config.mediaDir),
     config,
-    random: { bytes: (n) => new Uint8Array(randomBytes(n)), float: () => randomBytes(4).readUInt32BE() / 2 ** 32, uuid: () => randomUUID() },
+    random: {
+      bytes: (n) => new Uint8Array(randomBytes(n)),
+      float: () => randomBytes(4).readUInt32BE() / 2 ** 32,
+      uuid: () => randomUUID(),
+    },
     demoPhotos,
     log,
   };
@@ -50,7 +61,10 @@ async function main() {
   const app = createApp(deps);
   const ticker = setInterval(() => void advanceDue(deps).catch((e) => log(`ticker: ${e}`)), 30_000);
   // Bind to loopback only (builder-security: private by default). The simulator reaches it via 127.0.0.1.
-  const server = serve({ fetch: app.fetch, port: config.port, hostname: process.env.API_HOST ?? "127.0.0.1" }, (i) => log(`listening on http://${i.address}:${i.port}`));
+  const server = serve(
+    { fetch: app.fetch, port: config.port, hostname: process.env.API_HOST ?? "127.0.0.1" },
+    (i) => log(`listening on http://${i.address}:${i.port}`),
+  );
   const pidFile = join(REPO_ROOT, ".run/api.pid");
   await mkdir(join(REPO_ROOT, ".run"), { recursive: true });
   await writeFile(pidFile, String(process.pid));

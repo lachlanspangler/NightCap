@@ -6,6 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { PGlite } from "@electric-sql/pglite";
 
 export interface Queryable {
@@ -30,6 +31,8 @@ export function listMigrations(target: MigrationTarget = "pglite"): { name: stri
     .map((name) => ({ name, sql: readFileSync(join(MIGRATIONS_DIR, name), "utf8") }));
 }
 
+const inTx = new AsyncLocalStorage<boolean>();
+
 /** A serialising wrapper: PGlite is single-connection, so transactions must not interleave. */
 export function pgliteDb(pg: PGlite): Db {
   let chain: Promise<unknown> = Promise.resolve();
@@ -41,16 +44,25 @@ export function pgliteDb(pg: PGlite): Db {
   return {
     query: <T>(sql: string, params?: unknown[]) =>
       serial(async () => ({ rows: (await pg.query<T>(sql, params as unknown[])).rows })),
-    transaction: <T>(fn: (tx: Queryable) => Promise<T>) =>
-      serial(() =>
+    transaction: <T>(fn: (tx: Queryable) => Promise<T>) => {
+      // PGlite has one connection: a transaction started inside another would wait forever.
+      if (inTx.getStore()) {
+        return Promise.reject(
+          new Error("nested transaction (would deadlock on PGlite): finish the outer one first"),
+        );
+      }
+      return serial(() =>
         pg.transaction(async (tx) =>
-          fn({
-            query: async <R>(sql: string, params?: unknown[]) => ({
-              rows: (await tx.query<R>(sql, params as unknown[])).rows,
+          inTx.run(true, () =>
+            fn({
+              query: async <R>(sql: string, params?: unknown[]) => ({
+                rows: (await tx.query<R>(sql, params as unknown[])).rows,
+              }),
             }),
-          }),
+          ),
         ),
-      ),
+      );
+    },
     close: () => pg.close(),
   };
 }

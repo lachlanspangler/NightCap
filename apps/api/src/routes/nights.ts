@@ -1,4 +1,13 @@
-import { canMarkReady, canShoot, inviteExpiry, inviteLinks, inviteTokenFromBytes, INVITE_TOKEN_BYTES, normalizeCode, phaseOf } from "@nightcap/core";
+import {
+  canMarkReady,
+  canShoot,
+  inviteExpiry,
+  inviteLinks,
+  inviteTokenFromBytes,
+  INVITE_TOKEN_BYTES,
+  normalizeCode,
+  phaseOf,
+} from "@nightcap/core";
 import { asUser } from "@nightcap/db";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -34,8 +43,16 @@ nights.post("/join", async (c) => {
   const { code } = await body(c, z.object({ code: z.string().max(20) }));
   const normal = normalizeCode(code);
   if (!normal) fail(422, "invalid", "Night codes are 4 digits.");
-  const id = await asUser(deps.db, userId, async (tx) =>
-    (await tx.query<{ id: string | null }>(`select join_night_by_code($1, $2) as id`, [normal, deps.clock.now()])).rows[0]?.id ?? null,
+  const id = await asUser(
+    deps.db,
+    userId,
+    async (tx) =>
+      (
+        await tx.query<{ id: string | null }>(`select join_night_by_code($1, $2) as id`, [
+          normal,
+          deps.clock.now(),
+        ])
+      ).rows[0]?.id ?? null,
   );
   if (!id) fail(404, "unavailable");
   return c.json({ night: await nightView(deps, userId, id!) });
@@ -55,13 +72,22 @@ nights.post("/:id/invites", async (c) => {
   const userId = c.get("userId");
   const id = param(c, "id");
   await advance(deps, id);
-  const n = await asUser(deps.db, userId, async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [id])).rows[0]);
+  const n = await asUser(
+    deps.db,
+    userId,
+    async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [id])).rows[0],
+  );
   if (!n) fail(404, "not_found");
   const token = inviteTokenFromBytes(deps.random.bytes(INVITE_TOKEN_BYTES));
   const now = deps.clock.now();
   const expiresAt = inviteExpiry("night", now, n!.auto_end_at);
-  await asUser(deps.db, userId, (tx) => tx.query(`select create_invite('night', $1, $2, $3, null, $4)`, [id, sha256(token), expiresAt, now]));
-  return c.json({ token, links: inviteLinks(token), code: n!.join_code, expiresAt: expiresAt.toISOString() }, 201);
+  await asUser(deps.db, userId, (tx) =>
+    tx.query(`select create_invite('night', $1, $2, $3, null, $4)`, [id, sha256(token), expiresAt, now]),
+  );
+  return c.json(
+    { token, links: inviteLinks(token), code: n!.join_code, expiresAt: expiresAt.toISOString() },
+    201,
+  );
 });
 
 nights.post("/:id/end", async (c) => {
@@ -77,10 +103,20 @@ nights.post("/:id/ready", async (c) => {
   const userId = c.get("userId");
   const id = param(c, "id");
   await advance(deps, id);
-  const n = await asUser(deps.db, userId, async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [id])).rows[0]);
+  const n = await asUser(
+    deps.db,
+    userId,
+    async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [id])).rows[0],
+  );
   if (!n) fail(404, "not_found");
   const ok = canMarkReady(toState(n!), deps.clock.now());
-  if (!ok.ok) fail(ok.error === "too_early" ? 425 : 409, ok.error, undefined, ok.countsFrom ? { countsFrom: ok.countsFrom.toISOString() } : undefined);
+  if (!ok.ok)
+    fail(
+      ok.error === "too_early" ? 425 : 409,
+      ok.error,
+      undefined,
+      ok.countsFrom ? { countsFrom: ok.countsFrom.toISOString() } : undefined,
+    );
   await asUser(deps.db, userId, (tx) => tx.query(`select mark_ready($1, $2)`, [id, deps.clock.now()]));
   await advance(deps, id); // this may be the last "I'm good" → early reveal
   return c.json({ night: await nightView(deps, userId, id) });
@@ -89,7 +125,11 @@ nights.post("/:id/ready", async (c) => {
 /** Upload a shot (multipart field "photo"). Metadata is stripped before anything is stored. */
 export async function takeShot(deps: Deps, userId: string, nightId: string, raw: Uint8Array) {
   await advance(deps, nightId);
-  const n = await asUser(deps.db, userId, async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [nightId])).rows[0]);
+  const n = await asUser(
+    deps.db,
+    userId,
+    async (tx) => (await tx.query<NightRow>(`select * from nights where id = $1`, [nightId])).rows[0],
+  );
   if (!n) fail(404, "not_found");
   const facts = await asUser(deps.db, userId, async (tx) => {
     const r = await tx.query<{ participant: boolean; taken: number }>(
@@ -98,7 +138,12 @@ export async function takeShot(deps: Deps, userId: string, nightId: string, raw:
     );
     return r.rows[0]!;
   });
-  const can = canShoot({ isParticipant: facts.participant, phase: phaseOf({ endedAt: n!.ended_at, unlockedAt: n!.unlocked_at }), shotsTaken: facts.taken, rollSize: n!.roll_size });
+  const can = canShoot({
+    isParticipant: facts.participant,
+    phase: phaseOf({ endedAt: n!.ended_at, unlockedAt: n!.unlocked_at }),
+    shotsTaken: facts.taken,
+    rollSize: n!.roll_size,
+  });
   if (!can.ok) fail(can.error === "not_member" ? 403 : 409, can.error);
   let clean: { bytes: Uint8Array; mime: "image/jpeg" | "image/png" };
   try {
@@ -115,7 +160,17 @@ export async function takeShot(deps: Deps, userId: string, nightId: string, raw:
     await asUser(deps.db, userId, (tx) =>
       tx.query(
         `insert into shots (id, night_id, author_id, media_key, mime, width, height, bytes, taken_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [id, nightId, userId, key, clean!.mime, size?.width ?? null, size?.height ?? null, clean!.bytes.length, deps.clock.now()],
+        [
+          id,
+          nightId,
+          userId,
+          key,
+          clean!.mime,
+          size?.width ?? null,
+          size?.height ?? null,
+          clean!.bytes.length,
+          deps.clock.now(),
+        ],
       ),
     );
   } catch (e) {

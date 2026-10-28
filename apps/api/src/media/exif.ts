@@ -92,7 +92,8 @@ export function stripPng(bytes: Uint8Array): Uint8Array {
 export function imageSize(bytes: Uint8Array, mime: ImageMime): { width: number; height: number } | null {
   if (mime === "image/png") {
     if (bytes.length < 24) return null;
-    const r = (k: number) => ((bytes[k]! << 24) | (bytes[k + 1]! << 16) | (bytes[k + 2]! << 8) | bytes[k + 3]!) >>> 0;
+    const r = (k: number) =>
+      ((bytes[k]! << 24) | (bytes[k + 1]! << 16) | (bytes[k + 2]! << 8) | bytes[k + 3]!) >>> 0;
     return { width: r(16), height: r(20) };
   }
   let i = 2;
@@ -100,7 +101,12 @@ export function imageSize(bytes: Uint8Array, mime: ImageMime): { width: number; 
     if (bytes[i] !== 0xff) return null;
     const marker = bytes[i + 1]!;
     const len = (bytes[i + 2]! << 8) | bytes[i + 3]!;
-    if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) || (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf)) {
+    if (
+      (marker >= 0xc0 && marker <= 0xc3) ||
+      (marker >= 0xc5 && marker <= 0xc7) ||
+      (marker >= 0xc9 && marker <= 0xcb) ||
+      (marker >= 0xcd && marker <= 0xcf)
+    ) {
       return { height: (bytes[i + 5]! << 8) | bytes[i + 6]!, width: (bytes[i + 7]! << 8) | bytes[i + 8]! };
     }
     i += 2 + len;

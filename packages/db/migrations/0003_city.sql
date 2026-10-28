@@ -99,24 +99,35 @@ create policy city_signups_insert on public.city_signups for insert to authentic
 );
 create policy city_signups_delete on public.city_signups for delete to authenticated using (user_id = auth.uid());
 
-create policy city_tables_select on public.city_tables for select to authenticated using (
-  exists (select 1 from public.city_table_members m where m.table_id = id and m.user_id = auth.uid())
-);
+-- Membership checks go through a SECURITY DEFINER helper: a policy on city_table_members that
+-- queried city_table_members would recurse forever.
+create or replace function public.is_at_table(t uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from city_table_members where table_id = t and user_id = auth.uid())
+$$;
+grant execute on function public.is_at_table(uuid) to authenticated;
+
+create policy city_tables_select on public.city_tables for select to authenticated using (public.is_at_table(id));
 create policy city_table_members_select on public.city_table_members for select to authenticated using (
-  exists (select 1 from public.city_table_members m where m.table_id = table_id and m.user_id = auth.uid())
-  and (user_id = auth.uid() or not public.blocked_either(auth.uid(), user_id))
+  public.is_at_table(table_id) and (user_id = auth.uid() or not public.blocked_either(auth.uid(), user_id))
 );
+
+create or replace function public.were_tablemates(e uuid, other uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from city_tables t
+    join city_table_members a on a.table_id = t.id and a.user_id = auth.uid()
+    join city_table_members b on b.table_id = t.id and b.user_id = other
+    where t.event_id = e
+  )
+$$;
+grant execute on function public.were_tablemates(uuid, uuid) to authenticated;
 
 -- Keep in touch: you only ever see your own answers. Matches come from my_connections().
 create policy kit_own on public.keep_in_touch for select to authenticated using (from_user_id = auth.uid());
 create policy kit_insert on public.keep_in_touch for insert to authenticated with check (
   from_user_id = auth.uid()
-  and exists (
-    select 1 from public.city_tables t
-    join public.city_table_members a on a.table_id = t.id and a.user_id = auth.uid()
-    join public.city_table_members b on b.table_id = t.id and b.user_id = to_user_id
-    where t.event_id = keep_in_touch.event_id
-  )
+  and public.were_tablemates(keep_in_touch.event_id, to_user_id)
 );
 create policy kit_update on public.keep_in_touch for update to authenticated
   using (from_user_id = auth.uid()) with check (from_user_id = auth.uid());

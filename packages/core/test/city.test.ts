@@ -133,3 +133,16 @@ describe("city gate", () => {
     expect(CODE_OF_CONDUCT).toHaveLength(4);
   });
 });
+
+describe("formTables with blocks", () => {
+  it("opens another table rather than waitlisting a blocked pair", () => {
+    const r = formTables(
+      [solo("a"), solo("b"), solo("c"), solo("d")],
+      { min: 2, max: 4 },
+      pairSet([["a", "b"]]),
+    );
+    expect(r.waitlist).toEqual([]);
+    expect(r.tables).toHaveLength(2);
+    for (const t of r.tables) expect(t.userIds.includes("a") && t.userIds.includes("b")).toBe(false);
+  });
+});

@@ -14,7 +14,12 @@ export class HttpError extends Error {
   }
 }
 
-export const fail = (status: ContentfulStatusCode, code: string, message?: string, extra?: Record<string, unknown>): never => {
+export const fail = (
+  status: ContentfulStatusCode,
+  code: string,
+  message?: string,
+  extra?: Record<string, unknown>,
+): never => {
   throw new HttpError(status, code, message, extra);
 };
 
@@ -68,10 +73,20 @@ export const MESSAGES: Record<string, string> = {
 
 export function errorResponse(c: Context, e: unknown, log?: (m: string) => void) {
   if (e instanceof HttpError) {
-    return c.json({ error: e.code, message: e.message !== e.code ? e.message : (MESSAGES[e.code] ?? e.code), ...e.extra }, e.status);
+    return c.json(
+      { error: e.code, message: e.message !== e.code ? e.message : (MESSAGES[e.code] ?? e.code), ...e.extra },
+      e.status,
+    );
   }
   if (e instanceof z.ZodError) {
-    return c.json({ error: "invalid", message: "Something in that request wasn't right.", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, 422);
+    return c.json(
+      {
+        error: "invalid",
+        message: "Something in that request wasn't right.",
+        issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+      },
+      422,
+    );
   }
   const code = dbErrorCode(e);
   if (code) return c.json({ error: code, message: MESSAGES[code] ?? code }, STATUS[code] ?? 400);

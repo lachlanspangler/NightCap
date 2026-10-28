@@ -90,7 +90,10 @@ me.patch("/", async (c) => {
     set("tz", p.tz);
   }
   if (p.acceptCodeOfConduct) set("coc_accepted_at", deps.clock.now());
-  if (sets.length) await asUser(deps.db, userId, (tx) => tx.query(`update profiles set ${sets.join(", ")} where id = $1`, [userId, ...vals]));
+  if (sets.length)
+    await asUser(deps.db, userId, (tx) =>
+      tx.query(`update profiles set ${sets.join(", ")} where id = $1`, [userId, ...vals]),
+    );
   return c.json({ ok: true });
 });
 
@@ -98,23 +101,46 @@ me.patch("/", async (c) => {
 me.post("/verify-age", async (c) => {
   const deps = c.get("deps");
   if (deps.config.mode !== "mock") fail(501, "not_configured", "ID verification isn't set up yet.");
-  await asService(deps.db, (tx) => tx.query(`update profiles set age_verified_at = $2 where id = $1`, [c.get("userId"), deps.clock.now()]));
+  await asService(deps.db, (tx) =>
+    tx.query(`update profiles set age_verified_at = $2 where id = $1`, [c.get("userId"), deps.clock.now()]),
+  );
   return c.json({ ok: true, verified: true, stub: true });
 });
 
 me.get("/notifications", async (c) => {
   const deps = c.get("deps");
-  const rows = await asUser(deps.db, c.get("userId"), async (tx) =>
-    (await tx.query<{ id: string; kind: string; payload: Record<string, unknown>; created_at: Date; read_at: Date | null }>(
-      `select id, kind, payload, created_at, read_at from notifications order by created_at desc limit 50`,
-    )).rows,
+  const rows = await asUser(
+    deps.db,
+    c.get("userId"),
+    async (tx) =>
+      (
+        await tx.query<{
+          id: string;
+          kind: string;
+          payload: Record<string, unknown>;
+          created_at: Date;
+          read_at: Date | null;
+        }>(
+          `select id, kind, payload, created_at, read_at from notifications order by created_at desc limit 50`,
+        )
+      ).rows,
   );
-  return c.json({ notifications: rows.map((r) => ({ id: r.id, kind: r.kind, payload: r.payload, createdAt: r.created_at.toISOString(), read: !!r.read_at })) });
+  return c.json({
+    notifications: rows.map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      payload: r.payload,
+      createdAt: r.created_at.toISOString(),
+      read: !!r.read_at,
+    })),
+  });
 });
 
 me.post("/notifications/read", async (c) => {
   const deps = c.get("deps");
-  await asUser(deps.db, c.get("userId"), (tx) => tx.query(`update notifications set read_at = $1 where read_at is null`, [deps.clock.now()]));
+  await asUser(deps.db, c.get("userId"), (tx) =>
+    tx.query(`update notifications set read_at = $1 where read_at is null`, [deps.clock.now()]),
+  );
   return c.json({ ok: true });
 });
 
@@ -122,26 +148,57 @@ me.post("/notifications/read", async (c) => {
 me.get("/tags", async (c) => {
   const deps = c.get("deps");
   const userId = c.get("userId");
-  const rows = await asUser(deps.db, userId, async (tx) =>
-    (await tx.query<{ shot_id: string; tagger_id: string; night_id: string; tagger_name: string | null }>(
-      `select t.shot_id, t.tagger_id, s.night_id, p.display_name as tagger_name
+  const rows = await asUser(
+    deps.db,
+    userId,
+    async (tx) =>
+      (
+        await tx.query<{ shot_id: string; tagger_id: string; night_id: string; tagger_name: string | null }>(
+          `select t.shot_id, t.tagger_id, s.night_id, p.display_name as tagger_name
        from shot_tags t join shots s on s.id = t.shot_id left join profiles p on p.id = t.tagger_id
        where t.subject_id = $1 and t.status = 'pending' order by t.created_at desc`,
-      [userId],
-    )).rows,
+          [userId],
+        )
+      ).rows,
   );
-  return c.json({ tags: rows.map((r) => ({ shotId: r.shot_id, taggerId: r.tagger_id, taggerName: r.tagger_name, nightId: r.night_id })) });
+  return c.json({
+    tags: rows.map((r) => ({
+      shotId: r.shot_id,
+      taggerId: r.tagger_id,
+      taggerName: r.tagger_name,
+      nightId: r.night_id,
+    })),
+  });
 });
 
 me.get("/deferred", async (c) => {
   const deps = c.get("deps");
-  const rows = await asUser(deps.db, c.get("userId"), async (tx) =>
-    (await tx.query<{ id: string; action: string; payload: Record<string, unknown>; ask_at: Date; created_at: Date }>(
-      `select id, action, payload, ask_at, created_at from deferred_actions where resolved_at is null order by created_at`,
-    )).rows,
+  const rows = await asUser(
+    deps.db,
+    c.get("userId"),
+    async (tx) =>
+      (
+        await tx.query<{
+          id: string;
+          action: string;
+          payload: Record<string, unknown>;
+          ask_at: Date;
+          created_at: Date;
+        }>(
+          `select id, action, payload, ask_at, created_at from deferred_actions where resolved_at is null order by created_at`,
+        )
+      ).rows,
   );
   const now = deps.clock.now();
-  return c.json({ deferred: rows.map((r) => ({ id: r.id, action: r.action, payload: r.payload, askAt: r.ask_at.toISOString(), due: r.ask_at <= now })) });
+  return c.json({
+    deferred: rows.map((r) => ({
+      id: r.id,
+      action: r.action,
+      payload: r.payload,
+      askAt: r.ask_at.toISOString(),
+      due: r.ask_at <= now,
+    })),
+  });
 });
 
 me.post("/deferred/:id", async (c) => {
@@ -149,16 +206,32 @@ me.post("/deferred/:id", async (c) => {
   const userId = c.get("userId");
   const id = param(c, "id");
   const { confirm } = await body(c, z.object({ confirm: z.boolean() }));
-  const row = await asUser(deps.db, userId, async (tx) =>
-    (await tx.query<{ id: string; action: string; payload: Record<string, string>; ask_at: Date }>(`select id, action, payload, ask_at from deferred_actions where id = $1 and resolved_at is null`, [id])).rows[0],
+  const row = await asUser(
+    deps.db,
+    userId,
+    async (tx) =>
+      (
+        await tx.query<{ id: string; action: string; payload: Record<string, string>; ask_at: Date }>(
+          `select id, action, payload, ask_at from deferred_actions where id = $1 and resolved_at is null`,
+          [id],
+        )
+      ).rows[0],
   );
   if (!row) fail(404, "not_found");
   const me = await loadMe(deps, userId);
   if (confirm && (await nightModeFor(deps, me!)) && shouldDefer(row!.action as never, true)) {
-    fail(425, "too_early", "Still night time. We'll ask you again in the morning.", { askAt: deferUntil(deps.clock.now(), me!.tz).toISOString() });
+    fail(425, "too_early", "Still night time. We'll ask you again in the morning.", {
+      askAt: deferUntil(deps.clock.now(), me!.tz).toISOString(),
+    });
   }
   if (confirm) await executeDeferred(deps, userId, row!.action, row!.payload);
-  await asService(deps.db, (tx) => tx.query(`update deferred_actions set resolved_at = $2, resolution = $3 where id = $1`, [id, deps.clock.now(), confirm ? "confirmed" : "cancelled"]));
+  await asService(deps.db, (tx) =>
+    tx.query(`update deferred_actions set resolved_at = $2, resolution = $3 where id = $1`, [
+      id,
+      deps.clock.now(),
+      confirm ? "confirmed" : "cancelled",
+    ]),
+  );
   return c.json({ ok: true, resolution: confirm ? "confirmed" : "cancelled" });
 });
 
@@ -168,7 +241,12 @@ me.delete("/", async (c) => {
   const me = await loadMe(deps, userId);
   if (await nightModeFor(deps, me!)) {
     const askAt = deferUntil(deps.clock.now(), me!.tz);
-    await asService(deps.db, (tx) => tx.query(`insert into deferred_actions (user_id, action, payload, created_at, ask_at) values ($1, 'delete_account', '{}', $2, $3)`, [userId, deps.clock.now(), askAt]));
+    await asService(deps.db, (tx) =>
+      tx.query(
+        `insert into deferred_actions (user_id, action, payload, created_at, ask_at) values ($1, 'delete_account', '{}', $2, $3)`,
+        [userId, deps.clock.now(), askAt],
+      ),
+    );
     return c.json({ deferred: true, askAt: askAt.toISOString() }, 202);
   }
   await executeDeferred(deps, userId, "delete_account", {});

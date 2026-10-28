@@ -20,14 +20,30 @@ export function createApp(deps: Deps) {
     c.set("deps", deps);
     const t0 = Date.now();
     await next();
-    if (c.req.path !== "/health") deps.log?.(`${c.req.method} ${c.req.path} → ${c.res.status} ${Date.now() - t0}ms`);
+    if (c.req.path !== "/health")
+      deps.log?.(`${c.req.method} ${c.req.path} → ${c.res.status} ${Date.now() - t0}ms`);
   });
   app.onError((e, c) => errorResponse(c, e, deps.log));
   app.notFound((c) => c.json({ error: "not_found", message: "Nothing here." }, 404));
 
-  app.use("*", rateLimit({ name: "ip", capacity: 300, refillPerSec: 5, key: (c) => c.req.header("x-forwarded-for") ?? "local" }));
+  app.use(
+    "*",
+    rateLimit({
+      name: "ip",
+      capacity: 300,
+      refillPerSec: 5,
+      key: (c) => c.req.header("x-forwarded-for") ?? "local",
+    }),
+  );
 
-  app.get("/health", (c) => c.json({ ok: true, service: "nightcap-api", mode: deps.config.mode, now: deps.clock.now().toISOString() }));
+  app.get("/health", (c) =>
+    c.json({
+      ok: true,
+      service: "nightcap-api",
+      mode: deps.config.mode,
+      now: deps.clock.now().toISOString(),
+    }),
+  );
   app.route("/media", media);
   if (deps.config.mode === "mock") {
     // Login/signup are unauthenticated; the rest of /dev needs a user.
@@ -37,7 +53,12 @@ export function createApp(deps: Deps) {
 
   const authed = new Hono<AppEnv>();
   authed.use("*", requireUser);
-  const writes = rateLimit({ name: "acct", capacity: 60, refillPerSec: 1, key: (c) => (c.req.method === "GET" ? null : (c.get("userId") ?? null)) });
+  const writes = rateLimit({
+    name: "acct",
+    capacity: 60,
+    refillPerSec: 1,
+    key: (c) => (c.req.method === "GET" ? null : (c.get("userId") ?? null)),
+  });
   authed.use("*", writes);
   authed.route("/me", me);
   authed.route("/crews", crews);

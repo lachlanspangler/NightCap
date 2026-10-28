@@ -17,8 +17,28 @@ media.get("/:shotId", async (c) => {
   const exp = Number(c.req.query("exp"));
   const sig = c.req.query("sig") ?? "";
   if (!uuid.safeParse(shotId).success || !uuid.safeParse(viewer).success) fail(404, "not_found");
-  if (!verifyMediaSig(deps.config.mediaSecret, shotId, viewer, exp, sig, Math.floor(deps.clock.now().getTime() / 1000))) fail(403, "forbidden");
-  const row = await asUser(deps.db, viewer, async (tx) => (await tx.query<{ media_key: string; mime: string }>(`select media_key, mime from shots where id = $1`, [shotId])).rows[0]);
+  if (
+    !verifyMediaSig(
+      deps.config.mediaSecret,
+      shotId,
+      viewer,
+      exp,
+      sig,
+      Math.floor(deps.clock.now().getTime() / 1000),
+    )
+  )
+    fail(403, "forbidden");
+  const row = await asUser(
+    deps.db,
+    viewer,
+    async (tx) =>
+      (
+        await tx.query<{ media_key: string; mime: string }>(
+          `select media_key, mime from shots where id = $1`,
+          [shotId],
+        )
+      ).rows[0],
+  );
   if (!row) fail(404, "not_found");
   const bytes = await deps.media.get(row!.media_key);
   if (!bytes) fail(404, "not_found");

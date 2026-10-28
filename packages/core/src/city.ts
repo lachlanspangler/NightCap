@@ -45,8 +45,27 @@ export function formTables(
   const ideal = (opts.min + opts.max) / 2;
   const lo = Math.ceil(total / opts.max);
   const hi = Math.max(lo, Math.floor(total / opts.min));
-  const n = Math.min(hi, Math.max(lo, Math.round(total / ideal)));
+  const n0 = Math.min(hi, Math.max(lo, Math.round(total / ideal)));
+  // Blocks can make the "ideal" table count waitlist people who'd fit with one more table; try
+  // more tables (up to what the minimum allows) and keep the arrangement that seats the most.
+  let best: FormedTables | null = null;
+  for (let n = n0; n <= hi; n++) {
+    const r = seat(valid, n, opts, blocked, metBefore, tooBig);
+    const seated = (x: FormedTables) => x.tables.reduce((k, t) => k + t.userIds.length, 0);
+    if (!best || seated(r) > seated(best)) best = r;
+    if (r.waitlist.length === tooBig.length) break;
+  }
+  return best!;
+}
 
+function seat(
+  valid: readonly SignupBlock[],
+  n: number,
+  opts: TableOptions,
+  blocked: Set<string>,
+  metBefore: Set<string>,
+  tooBig: string[],
+): FormedTables {
   const order = [...valid].sort(
     (a, b) => b.members.length - a.members.length || a.blockId.localeCompare(b.blockId),
   );

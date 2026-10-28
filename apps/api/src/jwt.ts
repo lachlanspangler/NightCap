@@ -12,7 +12,12 @@ export interface Claims {
 
 const b64 = (s: string | Buffer) => Buffer.from(s).toString("base64url");
 
-export function signJwt(claims: Omit<Claims, "iat" | "exp">, secret: string, nowSec: number, ttlSec = 30 * 86_400): string {
+export function signJwt(
+  claims: Omit<Claims, "iat" | "exp">,
+  secret: string,
+  nowSec: number,
+  ttlSec = 30 * 86_400,
+): string {
   const header = b64(JSON.stringify({ alg: "HS256", typ: "JWT" }));
   const body = b64(JSON.stringify({ ...claims, iat: nowSec, exp: nowSec + ttlSec }));
   const sig = createHmac("sha256", secret).update(`${header}.${body}`).digest("base64url");
@@ -38,6 +43,7 @@ export function verifyJwt(token: string, secret: string, nowSec: number): Claims
   const given = Buffer.from(s, "base64url");
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
   if (typeof claims.exp !== "number" || claims.exp <= nowSec) return null;
-  if (claims.role !== "authenticated" || typeof claims.sub !== "string" || !UUID.test(claims.sub)) return null;
+  if (claims.role !== "authenticated" || typeof claims.sub !== "string" || !UUID.test(claims.sub))
+    return null;
   return claims as Claims;
 }

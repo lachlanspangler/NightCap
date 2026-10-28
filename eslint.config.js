@@ -42,6 +42,11 @@ export default tseslint.config(
     },
   },
   {
+    // Tests read loosely-typed JSON bodies.
+    files: ["**/test/**/*.ts"],
+    rules: { "@typescript-eslint/no-explicit-any": "off" },
+  },
+  {
     // Core is pure: no system clock, no randomness, no I/O. Time and randomness are injected.
     files: ["packages/core/src/**/*.ts"],
     rules: {

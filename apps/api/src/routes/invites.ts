@@ -13,8 +13,16 @@ invites.post("/redeem", async (c) => {
   const { token: input } = await body(c, z.object({ token: z.string().max(200) }));
   const token = parseInviteInput(input);
   if (!token) fail(404, "invalid_invite");
-  const r = await asUser(deps.db, c.get("userId"), async (tx) =>
-    (await tx.query<{ r: { kind: "crew" | "night"; crew_id?: string; night_id?: string } }>(`select redeem_invite($1, $2) as r`, [sha256(token!), deps.clock.now()])).rows[0]!.r,
+  const r = await asUser(
+    deps.db,
+    c.get("userId"),
+    async (tx) =>
+      (
+        await tx.query<{ r: { kind: "crew" | "night"; crew_id?: string; night_id?: string } }>(
+          `select redeem_invite($1, $2) as r`,
+          [sha256(token!), deps.clock.now()],
+        )
+      ).rows[0]!.r,
   );
   return c.json({ kind: r.kind, crewId: r.crew_id ?? null, nightId: r.night_id ?? null });
 });

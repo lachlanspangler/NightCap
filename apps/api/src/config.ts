@@ -30,7 +30,10 @@ export interface Config {
   missing: string[];
 }
 
-export function loadConfig(env: Record<string, string | undefined> = { ...loadDotEnv(), ...process.env }, randomSecret: () => string): Config {
+export function loadConfig(
+  env: Record<string, string | undefined> = { ...loadDotEnv(), ...process.env },
+  randomSecret: () => string,
+): Config {
   const missing: string[] = [];
   const need = (k: string) => {
     const v = env[k];
@@ -56,7 +59,15 @@ export function loadConfig(env: Record<string, string | undefined> = { ...loadDo
     pgliteDir: env.PGLITE_DIR === "" ? null : resolveDir(env.PGLITE_DIR || ".data/pglite"),
     mediaDir: resolveDir(env.MEDIA_DIR || ".data/media"),
     databaseUrl,
-    r2: mode === "prod" ? { accountId: r2Account!, accessKeyId: r2Key!, secretAccessKey: r2Secret!, bucket: env.R2_BUCKET || "nightcap-media" } : null,
+    r2:
+      mode === "prod"
+        ? {
+            accountId: r2Account!,
+            accessKeyId: r2Key!,
+            secretAccessKey: r2Secret!,
+            bucket: env.R2_BUCKET || "nightcap-media",
+          }
+        : null,
     missing,
   };
 }

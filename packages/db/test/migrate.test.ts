@@ -50,3 +50,16 @@ describe("migrations", () => {
     await pg.close();
   });
 });
+
+describe("transactions", () => {
+  it("nested transactions fail loudly instead of deadlocking", async () => {
+    const { createPglite: mk, asUser: au, asService: as } = await import("../src");
+    const { db } = await mk();
+    await expect(as(db, () => au(db, "11111111-1111-4111-8111-111111111111", async () => 1))).rejects.toThrow(
+      /nested transaction/,
+    );
+    // and the connection is still usable afterwards
+    expect(await as(db, async (tx) => (await tx.query<{ x: number }>("select 1 as x")).rows[0]!.x)).toBe(1);
+    await db.close();
+  });
+});
