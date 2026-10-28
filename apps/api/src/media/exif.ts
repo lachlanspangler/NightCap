@@ -21,18 +21,25 @@ function isIccApp2(bytes: Uint8Array, start: number, len: number) {
   return true;
 }
 
+/**
+ * Walks every marker segment of the file, including segments between progressive scans, and
+ * stops at the first EOI: anything appended after it (iPhone gain-map MPF images with their own
+ * Exif, Pixel motion-photo MP4 trailers) is dropped (code review M1 #1).
+ */
 export function stripJpeg(bytes: Uint8Array): Uint8Array {
   if (sniffMime(bytes) !== "image/jpeg") throw new ImageError("not a jpeg");
   const out: Uint8Array[] = [bytes.subarray(0, 2)];
   let i = 2;
+  let sawEoi = false;
   while (i < bytes.length) {
     if (bytes[i] !== 0xff) throw new ImageError("bad marker");
-    // Skip fill bytes (0xFF padding before a marker).
-    while (bytes[i + 1] === 0xff) i++;
-    const marker = bytes[i + 1]!;
+    while (bytes[i + 1] === 0xff) i++; // fill bytes
+    const marker = bytes[i + 1];
+    if (marker === undefined) break;
     if (marker === 0xd9) {
       out.push(bytes.subarray(i, i + 2));
-      break;
+      sawEoi = true;
+      break; // drop any trailer
     }
     if (marker >= 0xd0 && marker <= 0xd7) {
       out.push(bytes.subarray(i, i + 2));
@@ -42,17 +49,31 @@ export function stripJpeg(bytes: Uint8Array): Uint8Array {
     if (i + 4 > bytes.length) throw new ImageError("truncated segment");
     const len = (bytes[i + 2]! << 8) | bytes[i + 3]!;
     if (len < 2 || i + 2 + len > bytes.length) throw new ImageError("bad segment length");
-    const seg = bytes.subarray(i, i + 2 + len);
+    const segEnd = i + 2 + len;
     if (marker === 0xda) {
-      // Start of scan: copy the rest (entropy-coded data up to and incl. EOI) as-is.
-      out.push(bytes.subarray(i));
-      break;
+      // SOS header, then entropy-coded data up to the next real marker (not FF00 / RSTn / fill).
+      let j = segEnd;
+      while (j < bytes.length) {
+        if (bytes[j] === 0xff) {
+          const next = bytes[j + 1];
+          if (next === 0x00 || (next !== undefined && next >= 0xd0 && next <= 0xd7) || next === 0xff) {
+            j += next === 0xff ? 1 : 2;
+            continue;
+          }
+          break;
+        }
+        j++;
+      }
+      out.push(bytes.subarray(i, j));
+      i = j;
+      continue;
     }
     const isApp = marker >= 0xe0 && marker <= 0xef;
     const keep = !isApp ? marker !== 0xfe : marker === 0xe0 || (marker === 0xe2 && isIccApp2(bytes, i, len));
-    if (keep) out.push(seg);
-    i += 2 + len;
+    if (keep) out.push(bytes.subarray(i, segEnd));
+    i = segEnd;
   }
+  if (!sawEoi) out.push(Uint8Array.from([0xff, 0xd9]));
   const total = out.reduce((n, p) => n + p.length, 0);
   const res = new Uint8Array(total);
   let o = 0;
