@@ -80,6 +80,7 @@ what it felt like.
   would re-reveal the photo → sticky `subject_hidden` (migration 0005), mirrored in core + fixture.
 
 ## 2026-10-28 — Milestone 1 reviews: code reviewer (signed off in round 2)
+
 - **Round 1:** 16 findings. The ones that mattered:
   - **#1:** the JPEG stripper copied everything after the first scan, so GPS hidden between
     progressive scans or in an after-EOI trailer (iPhone gain maps, Pixel motion photos) survived.
@@ -97,6 +98,6 @@ what it felt like.
     on-device image caches outliving a hide.
 - **Round 2:** signed off for M1 in mock mode. Its follow-ups are fixed too: rightmost-XFF /
   socket key, re-entering your own code, a leaver's photos leave with them, default privileges.
-- **Lesson:** every serious finding was a place where a *promise* (no location, blocks mean
+- **Lesson:** every serious finding was a place where a _promise_ (no location, blocks mean
   never together, rate limit) depended on one layer. Where we had two layers (core + RLS, server
   strip + `exif: false`), the review found nothing.

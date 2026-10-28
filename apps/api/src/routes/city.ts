@@ -431,11 +431,10 @@ city.post("/tables/:id/leave", async (c) => {
       )
     ).rows[0];
     if (!t) return;
-    await tx.query(`update city_table_members set left_at = coalesce(left_at, $3) where table_id = $1 and user_id = $2`, [
-      tableId,
-      userId,
-      deps.clock.now(),
-    ]);
+    await tx.query(
+      `update city_table_members set left_at = coalesce(left_at, $3) where table_id = $1 and user_id = $2`,
+      [tableId, userId, deps.clock.now()],
+    );
     if (t.night_id) {
       await tx.query(`delete from night_members where night_id = $1 and user_id = $2`, [t.night_id, userId]);
       if (p.removePhotos) {
