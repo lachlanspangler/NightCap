@@ -31,7 +31,12 @@ export function pairSet(pairs: readonly [string, string][]): Set<string> {
  * blocked pairs (either direction) never at the same table. Soft: spread people who've met before,
  * keep gender mixes balanced (and avoid being the only woman/nonbinary person at a table).
  */
-export function formTables(blocks: readonly SignupBlock[], opts: TableOptions, blocked: Set<string>, metBefore: Set<string> = new Set()): FormedTables {
+export function formTables(
+  blocks: readonly SignupBlock[],
+  opts: TableOptions,
+  blocked: Set<string>,
+  metBefore: Set<string> = new Set(),
+): FormedTables {
   const valid = blocks.filter((b) => b.members.length > 0 && b.members.length <= opts.max);
   const tooBig = blocks.filter((b) => b.members.length > opts.max).map((b) => b.blockId);
   const total = valid.reduce((n, b) => n + b.members.length, 0);
@@ -42,7 +47,9 @@ export function formTables(blocks: readonly SignupBlock[], opts: TableOptions, b
   const hi = Math.max(lo, Math.floor(total / opts.min));
   const n = Math.min(hi, Math.max(lo, Math.round(total / ideal)));
 
-  const order = [...valid].sort((a, b) => b.members.length - a.members.length || a.blockId.localeCompare(b.blockId));
+  const order = [...valid].sort(
+    (a, b) => b.members.length - a.members.length || a.blockId.localeCompare(b.blockId),
+  );
   const tables: SignupBlock[][] = Array.from({ length: n }, () => []);
   const waitlist: string[] = [...tooBig];
 
@@ -61,7 +68,10 @@ export function formTables(blocks: readonly SignupBlock[], opts: TableOptions, b
   };
   const cost = (t: SignupBlock[], b: SignupBlock) => {
     const seated = people(t);
-    const met = seated.reduce((k, p) => k + b.members.filter((q) => metBefore.has(pairKey(p.userId, q.userId))).length, 0);
+    const met = seated.reduce(
+      (k, p) => k + b.members.filter((q) => metBefore.has(pairKey(p.userId, q.userId))).length,
+      0,
+    );
     return seated.length * 1 + met * 5 + genderCost([...seated, ...b.members]);
   };
 
@@ -86,7 +96,10 @@ export function formTables(blocks: readonly SignupBlock[], opts: TableOptions, b
     if (people(t).length >= opts.min || t.length === 0) continue;
     tables.splice(i, 1);
     for (const b of t) {
-      const target = tables.find((o) => people(o).length >= opts.min && people(o).length + b.members.length <= opts.max && !conflicts(o, b));
+      const target = tables.find(
+        (o) =>
+          people(o).length >= opts.min && people(o).length + b.members.length <= opts.max && !conflicts(o, b),
+      );
       if (target) target.push(b);
       else waitlist.push(b.blockId);
     }
@@ -123,7 +136,12 @@ export function mutualMatches(optins: readonly KeepInTouch[]): [string, string][
 
 export type CityGateError = "not_21" | "not_verified" | "no_code_of_conduct" | "not_opted_in";
 
-export function canJoinCityNights(p: { is21: boolean; ageVerified: boolean; cocAcceptedAt: Date | null; cityOptIn: boolean }): Result<undefined, CityGateError> {
+export function canJoinCityNights(p: {
+  is21: boolean;
+  ageVerified: boolean;
+  cocAcceptedAt: Date | null;
+  cityOptIn: boolean;
+}): Result<undefined, CityGateError> {
   if (!p.is21) return err("not_21");
   if (!p.cityOptIn) return err("not_opted_in");
   if (!p.cocAcceptedAt) return err("no_code_of_conduct");

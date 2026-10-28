@@ -32,7 +32,11 @@ export interface NightSchedule {
 }
 
 /** Fixed timestamps for a night started at `startedAt` in `tz`. */
-export function computeNightSchedule(startedAt: Date, tz: string, rules: NightRules = NIGHT_RULES): NightSchedule {
+export function computeNightSchedule(
+  startedAt: Date,
+  tz: string,
+  rules: NightRules = NIGHT_RULES,
+): NightSchedule {
   const cap = new Date(startedAt.getTime() + rules.autoEndMaxHours * HOUR);
   const minEnd = new Date(startedAt.getTime() + rules.minLiveHours * HOUR);
   const autoEndAt = minDate(nextLocalTime(minEnd, tz, rules.autoEndHour), cap);
@@ -106,10 +110,22 @@ export function advanceNight(night: NightState, participants: ParticipantState[]
     // Moments: live window [startedAt, autoEndAt). Reveal when everyone has posted, or at close.
     const allPosted = participants.length > 0 && participants.every((p) => p.shotCount > 0);
     if (allPosted) {
-      return { phase: "unlocked", endedAt: night.endedAt ?? now, unlockedAt: now, reason: "everyone_posted", changed: true };
+      return {
+        phase: "unlocked",
+        endedAt: night.endedAt ?? now,
+        unlockedAt: now,
+        reason: "everyone_posted",
+        changed: true,
+      };
     }
     if (now >= night.autoEndAt) {
-      return { phase: "unlocked", endedAt: night.endedAt ?? night.autoEndAt, unlockedAt: night.autoEndAt, reason: "window_closed", changed: true };
+      return {
+        phase: "unlocked",
+        endedAt: night.endedAt ?? night.autoEndAt,
+        unlockedAt: night.autoEndAt,
+        reason: "window_closed",
+        changed: true,
+      };
     }
     return { phase: "live", changed: false };
   }
@@ -137,7 +153,10 @@ export function advanceNight(night: NightState, participants: ParticipantState[]
 export type ReadyError = "not_developing" | "too_early";
 
 /** Can a participant's "I'm good" be recorded now? Before 07:00 it doesn't count, so we say so. */
-export function canMarkReady(night: NightState, now: Date): { ok: true } | { ok: false; error: ReadyError; countsFrom?: Date } {
+export function canMarkReady(
+  night: NightState,
+  now: Date,
+): { ok: true } | { ok: false; error: ReadyError; countsFrom?: Date } {
   if (phaseOf(night) !== "developing") return { ok: false, error: "not_developing" };
   const floor = effectiveEarliestUnlock(night, night.endedAt, night.tz);
   if (now < floor) return { ok: false, error: "too_early", countsFrom: floor };

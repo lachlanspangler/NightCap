@@ -6,6 +6,7 @@ needs and this machine's constraints. Verdict: **keep the NightOut stack**, with
 adaptations. ADR 0001.
 
 ## Requirements that drive the stack
+
 1. A real camera on iOS (and Android later), haptics, the share sheet and camera-roll save.
 2. Strict, testable privacy rules: visibility depends on membership, unlock state, hides and
    blocks. We want the database to enforce them (RLS), not just the API.
@@ -17,6 +18,7 @@ adaptations. ADR 0001.
 6. A demo that works with **no keys at all** (mock mode).
 
 ## Client: Expo SDK 54 + React Native 0.81 + expo-router ✅
+
 - Same as NightOut, so patterns and lessons transfer (jest-expo + RNTL, Maestro).
 - Why not SDK 58 (current)? Its engines field requires Node ≥ 22.13. The machine has Node 20.20.
   SDK 54 supports Node 20.19+.
@@ -32,11 +34,13 @@ adaptations. ADR 0001.
 - QR: generate with `qrcode` (pure JS) → SVG. Scanning uses `expo-camera`'s barcode scanner.
 
 ## API: Hono on Node ✅
+
 - Same as NightOut. `createApp(deps)` takes injected dependencies (db, clock, media store, auth)
   so tests call `app.request()` in-process. Zod validation via `@hono/zod-validator`-style helpers.
 - Port **8788**.
 
 ## Data: Postgres (Supabase in prod) ✅, with PGlite for local/test ⚠️ adaptation
+
 - Supabase gives Postgres + Auth + RLS. RLS is exactly the right tool for "who can see this shot".
 - **No Docker here**, so `supabase start` (which needs Docker) is out. The options:
   1. In-memory fakes in the API: fast, but RLS goes untested. ❌
@@ -47,7 +51,7 @@ adaptations. ADR 0001.
   (`0000_supabase_shim.sql`, PGlite-only) creates `auth.users`, `auth.uid()` (reads
   `request.jwt.claims` like Supabase), and the `anon` / `authenticated` / `service_role` roles.
 - The API runs each user request in a transaction: `set local role authenticated;
-  select set_config('request.jwt.claims', …, true)`. That's exactly what Supabase's PostgREST does,
+select set_config('request.jwt.claims', …, true)`. That's exactly what Supabase's PostgREST does,
   so RLS is exercised on every request, in tests and in the demo.
 - Prod driver: `postgres` (porsager) over `DATABASE_URL`. It's behind the same `Db` interface as
   PGlite. Only the adapter differs.
@@ -55,6 +59,7 @@ adaptations. ADR 0001.
   future `supabase start` never collides with NightOut or defaults.
 
 ## Auth: Supabase Auth (prod) / dev JWTs (mock) ✅
+
 - Prod: Supabase phone OTP or Sign in with Apple. The API verifies Supabase JWTs with
   `SUPABASE_JWT_SECRET`.
 - Mock: the API mints HS256 JWTs with the same shape (`sub`, `role: authenticated`) signed with
@@ -62,6 +67,7 @@ adaptations. ADR 0001.
   the demo friends plus "new account" (name + DOB). One code path verifies both.
 
 ## Media: Cloudflare R2 (prod) / local disk (mock) ✅
+
 - R2 means zero egress and S3-compatible presigned URLs (same as NightOut).
 - In the prototype the client uploads a multipart image to the API, which **strips EXIF** and then
   writes to the `MediaStore` (disk in mock, R2 in prod via S3 API). It's simpler than presigned
@@ -72,6 +78,7 @@ adaptations. ADR 0001.
   In prod, R2 presigned GETs fill the same role.
 
 ## Language & tooling ✅
+
 - TypeScript 5.9 strict everywhere, npm workspaces (`packages/*`, `apps/*`).
 - Vitest 3 for core/db/api (Vitest 4 needs Node 22). jest-expo 54 + RNTL for mobile screens.
 - ESLint 9 flat config + Prettier. ESLint bans `Date.now`, `new Date()` without args and
@@ -80,6 +87,7 @@ adaptations. ADR 0001.
 - `make setup` / `make check` / `make doctor` (like the sister projects).
 
 ## What we'd change at scale (not now)
+
 - A push notifications service (Expo push), real-time (Supabase Realtime) for live shot counts.
   The prototype polls every 10 s.
 - Media worker: thumbnails (WebP variants), video, CSAM/NCII hash matching.

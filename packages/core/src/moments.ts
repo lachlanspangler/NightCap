@@ -35,7 +35,12 @@ export function currentOrNextMoment(now: Date, tz: string, s: MomentSchedule = D
 }
 
 /** The most recent `n` windows that have already closed, newest first. */
-export function pastMoments(now: Date, tz: string, n: number, s: MomentSchedule = DEFAULT_MOMENT): MomentWindow[] {
+export function pastMoments(
+  now: Date,
+  tz: string,
+  n: number,
+  s: MomentSchedule = DEFAULT_MOMENT,
+): MomentWindow[] {
   const out: MomentWindow[] = [];
   const today = localParts(now, tz);
   for (let d = 0; d > -7 * (n + 2) && out.length < n; d--) {
@@ -50,10 +55,18 @@ export function pastMoments(now: Date, tz: string, n: number, s: MomentSchedule 
 
 export function validateMomentSchedule(s: MomentSchedule): boolean {
   return (
-    Number.isInteger(s.weekday) && s.weekday >= 0 && s.weekday <= 6 &&
-    Number.isInteger(s.hour) && s.hour >= 0 && s.hour <= 23 &&
-    Number.isInteger(s.minute) && s.minute >= 0 && s.minute <= 59 &&
-    Number.isInteger(s.durationMinutes) && s.durationMinutes >= 30 && s.durationMinutes <= DAY / MINUTE
+    Number.isInteger(s.weekday) &&
+    s.weekday >= 0 &&
+    s.weekday <= 6 &&
+    Number.isInteger(s.hour) &&
+    s.hour >= 0 &&
+    s.hour <= 23 &&
+    Number.isInteger(s.minute) &&
+    s.minute >= 0 &&
+    s.minute <= 59 &&
+    Number.isInteger(s.durationMinutes) &&
+    s.durationMinutes >= 30 &&
+    s.durationMinutes <= DAY / MINUTE
   );
 }
 

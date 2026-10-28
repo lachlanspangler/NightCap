@@ -31,7 +31,11 @@ export function createTag(input: {
 export type TagResponseError = "not_subject" | "already_removed";
 
 /** Only the subject decides about their own tag. */
-export function respondToTag(tag: Tag, actorId: string, action: "approve" | "remove"): Result<TagStatus, TagResponseError> {
+export function respondToTag(
+  tag: Tag,
+  actorId: string,
+  action: "approve" | "remove",
+): Result<TagStatus, TagResponseError> {
   if (tag.subjectId !== actorId) return err("not_subject");
   if (tag.status === "removed") return err("already_removed");
   return ok(action === "approve" ? "approved" : "removed");
@@ -71,7 +75,11 @@ export const REPORT_REASONS = ["in_photo", "nudity", "minor", "harassment", "vio
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
 /** Subject-category reports hide the shot for everyone (pending review), not just the reporter. */
-export const AUTO_HIDE_REASONS: ReadonlySet<ReportReason> = new Set<ReportReason>(["in_photo", "nudity", "minor"]);
+export const AUTO_HIDE_REASONS: ReadonlySet<ReportReason> = new Set<ReportReason>([
+  "in_photo",
+  "nudity",
+  "minor",
+]);
 
 export const REPORT_LABELS: Record<ReportReason, string> = {
   in_photo: "I'm in this and don't want it shared",

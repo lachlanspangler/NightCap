@@ -33,12 +33,12 @@ describe("localParts / offsets", () => {
 
 describe("zonedToInstant", () => {
   it("converts ordinary wall times", () => {
-    expect(zonedToInstant({ year: 2026, month: 10, day: 31, hour: 10 }, "America/Chicago").toISOString()).toBe(
-      "2026-10-31T15:00:00.000Z",
-    );
-    expect(zonedToInstant({ year: 2026, month: 1, day: 15, hour: 0, minute: 30 }, "Asia/Kolkata").toISOString()).toBe(
-      "2026-01-14T19:00:00.000Z",
-    );
+    expect(
+      zonedToInstant({ year: 2026, month: 10, day: 31, hour: 10 }, "America/Chicago").toISOString(),
+    ).toBe("2026-10-31T15:00:00.000Z");
+    expect(
+      zonedToInstant({ year: 2026, month: 1, day: 15, hour: 0, minute: 30 }, "Asia/Kolkata").toISOString(),
+    ).toBe("2026-01-14T19:00:00.000Z");
   });
   it("pushes a non-existent spring-forward wall time forward by the gap", () => {
     // 2026-03-08 02:30 doesn't exist in Chicago (02:00 → 03:00).

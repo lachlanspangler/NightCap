@@ -14,7 +14,12 @@ export const TARGETS = {
 
 export const HOLD_TO_CONFIRM_MS = { day: 900, night: 1200 } as const;
 
-export function isNightMode(input: { now: Date; tz: string; inLiveNight: boolean; pref?: NightModePref }): boolean {
+export function isNightMode(input: {
+  now: Date;
+  tz: string;
+  inLiveNight: boolean;
+  pref?: NightModePref;
+}): boolean {
   const pref = input.pref ?? "auto";
   if (pref === "always") return true;
   if (pref === "never") return false;
@@ -42,7 +47,12 @@ export type SensitiveAction =
   | "delete_shot";
 
 /** Irreversible-and-social actions wait for the morning. Safety actions never wait. */
-const DEFERRED_AT_NIGHT: ReadonlySet<SensitiveAction> = new Set(["leave_crew", "delete_account", "remove_member", "delete_crew"]);
+const DEFERRED_AT_NIGHT: ReadonlySet<SensitiveAction> = new Set([
+  "leave_crew",
+  "delete_account",
+  "remove_member",
+  "delete_crew",
+]);
 
 export function shouldDefer(action: SensitiveAction, nightMode: boolean): boolean {
   return nightMode && DEFERRED_AT_NIGHT.has(action);

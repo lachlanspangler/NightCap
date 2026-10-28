@@ -5,21 +5,23 @@
 > enforced in `packages/core/src/drunk.ts` and the design tokens.
 
 ## What changes after a few drinks (and in a dark, loud bar)
-| effect | consequence for UI | rule |
-|---|---|---|
-| **Fine motor control drops**; tremor; slower corrections | Missed small targets, accidental taps on neighbours | **Primary target ≥ 88pt in night mode**, every target ≥ 56pt, ≥ 16pt spacing between tappables |
-| **Visual acuity and contrast sensitivity drop**; dark adaptation; double vision | Small or low-contrast text unreadable | Body ≥ 18pt in night mode, key numbers ≥ 48pt, contrast ≥ 7:1 (AAA) for text on night bg |
-| **Working memory and attention narrow** | Multi-step flows abandoned midway; choices overwhelm | **One primary action per screen.** No forms at night. No more than 3 choices visible. |
-| **Disinhibition**, worse judgment | Regrettable posts, messages, deletions | **Nothing is visible to others until morning.** Irreversible actions are deferred to the morning |
-| **Reaction time slows** | Short undo toasts disappear before you read them | Undo windows **≥ 8 s** at night (5 s by day) |
-| **Hearing masked** (loud music) | Sound cues useless | Haptics, not sound. No audio cues. |
-| **Bright light hurts in dark rooms** | White screens blind you and everyone around | A dark, warm night palette. No pure white backgrounds at night. Dimmed shutter flash UI |
-| **One hand** (drink in the other) | Top-of-screen controls unreachable | Primary actions in the **bottom third**. Shutter bottom-centre. |
-| **Low battery** (15% at midnight) | App must be light | No live video previews beyond the camera. Lazy-loaded images. No background location. |
+
+| effect                                                                          | consequence for UI                                   | rule                                                                                             |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Fine motor control drops**; tremor; slower corrections                        | Missed small targets, accidental taps on neighbours  | **Primary target ≥ 88pt in night mode**, every target ≥ 56pt, ≥ 16pt spacing between tappables   |
+| **Visual acuity and contrast sensitivity drop**; dark adaptation; double vision | Small or low-contrast text unreadable                | Body ≥ 18pt in night mode, key numbers ≥ 48pt, contrast ≥ 7:1 (AAA) for text on night bg         |
+| **Working memory and attention narrow**                                         | Multi-step flows abandoned midway; choices overwhelm | **One primary action per screen.** No forms at night. No more than 3 choices visible.            |
+| **Disinhibition**, worse judgment                                               | Regrettable posts, messages, deletions               | **Nothing is visible to others until morning.** Irreversible actions are deferred to the morning |
+| **Reaction time slows**                                                         | Short undo toasts disappear before you read them     | Undo windows **≥ 8 s** at night (5 s by day)                                                     |
+| **Hearing masked** (loud music)                                                 | Sound cues useless                                   | Haptics, not sound. No audio cues.                                                               |
+| **Bright light hurts in dark rooms**                                            | White screens blind you and everyone around          | A dark, warm night palette. No pure white backgrounds at night. Dimmed shutter flash UI          |
+| **One hand** (drink in the other)                                               | Top-of-screen controls unreachable                   | Primary actions in the **bottom third**. Shutter bottom-centre.                                  |
+| **Low battery** (15% at midnight)                                               | App must be light                                    | No live video previews beyond the camera. Lazy-loaded images. No background location.            |
 
 ## Principles
+
 1. **Big and few.** In night mode, the camera screen has one huge shutter, a big shot counter, and
-   *at most* two secondary actions (invite, end night), both ≥ 56pt.
+   _at most_ two secondary actions (invite, end night), both ≥ 56pt.
 2. **Nothing permanent by accident.**
    - Every destructive action is **hold-to-confirm** (press and hold 1 second, with a filling
      ring), never a tap or a small "OK" in a dialog. A hold is hard to do by accident and easy to
@@ -42,14 +44,18 @@
    "Tap this when you're up for real."
 
 ## Night mode: when is it on?
+
 `isNightMode(now, tz, liveNight)` in core:
+
 - ON if you're in a live night, **or** local time is 21:00–05:59.
 - User override: Always / Auto / Never (settings). Auto is the default.
 - Night mode switches tokens: bigger type ramp, bigger targets, longer undo, the deferral rules.
 
 ## Copy voice
+
 Warm, short, a little cheeky, never judgmental about drinking. Never "you're drunk". Say "it's
 late", "future you", "morning you".
+
 - "Future you will thank you."
 - "Developing… see it at 10:00 AM."
 - "Roll's full. You're in the moment now."
@@ -57,6 +63,7 @@ late", "future you", "morning you".
 - "Everyone's up? Reveal early."
 
 ## Testable rules (enforced)
+
 - `nightTargetMin = 56`, `nightPrimaryMin = 88`, `dayTargetMin = 48`. A screen test asserts the
   shutter's style ≥ 88 and every `Pressable` on the live-night screen ≥ 56.
 - `undoWindowMs(nightMode) = nightMode ? 8000 : 5000`.

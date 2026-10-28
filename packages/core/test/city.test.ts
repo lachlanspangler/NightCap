@@ -1,8 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { canJoinCityNights, CODE_OF_CONDUCT, formTables, mutualMatches, pairSet, tableRevealed, type Gender, type SignupBlock } from "../src";
+import {
+  canJoinCityNights,
+  CODE_OF_CONDUCT,
+  formTables,
+  mutualMatches,
+  pairSet,
+  tableRevealed,
+  type Gender,
+  type SignupBlock,
+} from "../src";
 
-const solo = (id: string, gender: Gender = "unspecified"): SignupBlock => ({ blockId: id, members: [{ userId: id, gender }] });
-const crew = (id: string, ...ids: string[]): SignupBlock => ({ blockId: id, members: ids.map((userId) => ({ userId, gender: "unspecified" as Gender })) });
+const solo = (id: string, gender: Gender = "unspecified"): SignupBlock => ({
+  blockId: id,
+  members: [{ userId: id, gender }],
+});
+const crew = (id: string, ...ids: string[]): SignupBlock => ({
+  blockId: id,
+  members: ids.map((userId) => ({ userId, gender: "unspecified" as Gender })),
+});
 const opts = { min: 4, max: 6 };
 
 describe("formTables", () => {
@@ -17,7 +32,15 @@ describe("formTables", () => {
     }
   });
   it("keeps crews together", () => {
-    const blocks = [crew("c1", "a", "b", "c"), crew("c2", "d", "e"), solo("f"), solo("g"), solo("h"), solo("i"), solo("j")];
+    const blocks = [
+      crew("c1", "a", "b", "c"),
+      crew("c2", "d", "e"),
+      solo("f"),
+      solo("g"),
+      solo("h"),
+      solo("i"),
+      solo("j"),
+    ];
     const r = formTables(blocks, opts, new Set());
     const tableOf = (u: string) => r.tables.findIndex((t) => t.userIds.includes(u));
     expect(new Set(["a", "b", "c"].map(tableOf)).size).toBe(1);
@@ -25,21 +48,46 @@ describe("formTables", () => {
   });
   it("never seats a blocked pair together", () => {
     const blocks = Array.from({ length: 10 }, (_, k) => solo(`u${k}`));
-    const blocked = pairSet([["u0", "u1"], ["u2", "u3"], ["u0", "u4"]]);
+    const blocked = pairSet([
+      ["u0", "u1"],
+      ["u2", "u3"],
+      ["u0", "u4"],
+    ]);
     const r = formTables(blocks, opts, blocked);
     for (const t of r.tables) {
-      for (const [a, b] of [["u0", "u1"], ["u2", "u3"], ["u0", "u4"]]) expect(t.userIds.includes(a!) && t.userIds.includes(b!)).toBe(false);
+      for (const [a, b] of [
+        ["u0", "u1"],
+        ["u2", "u3"],
+        ["u0", "u4"],
+      ])
+        expect(t.userIds.includes(a!) && t.userIds.includes(b!)).toBe(false);
     }
   });
   it("waitlists when there aren't enough people", () => {
-    expect(formTables([solo("a"), solo("b"), solo("c")], opts, new Set())).toEqual({ tables: [], waitlist: ["a", "b", "c"] });
+    expect(formTables([solo("a"), solo("b"), solo("c")], opts, new Set())).toEqual({
+      tables: [],
+      waitlist: ["a", "b", "c"],
+    });
   });
   it("waitlists blocks bigger than a table", () => {
-    const r = formTables([crew("big", "a", "b", "c", "d", "e", "f", "g"), solo("h"), solo("i"), solo("j"), solo("k")], opts, new Set());
+    const r = formTables(
+      [crew("big", "a", "b", "c", "d", "e", "f", "g"), solo("h"), solo("i"), solo("j"), solo("k")],
+      opts,
+      new Set(),
+    );
     expect(r.waitlist).toContain("big");
   });
   it("avoids leaving someone the only woman at a table when it can", () => {
-    const blocks = [solo("w1", "woman"), solo("w2", "woman"), solo("w3", "woman"), solo("w4", "woman"), solo("m1", "man"), solo("m2", "man"), solo("m3", "man"), solo("m4", "man")];
+    const blocks = [
+      solo("w1", "woman"),
+      solo("w2", "woman"),
+      solo("w3", "woman"),
+      solo("w4", "woman"),
+      solo("m1", "man"),
+      solo("m2", "man"),
+      solo("m3", "man"),
+      solo("m4", "man"),
+    ];
     const r = formTables(blocks, opts, new Set());
     for (const t of r.tables) expect(t.userIds.filter((u) => u.startsWith("w")).length).not.toBe(1);
   });

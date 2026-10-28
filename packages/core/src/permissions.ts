@@ -18,7 +18,12 @@ export type CrewAction =
   | "set_reunion"
   | "set_moment_schedule";
 
-const OWNER_ONLY: ReadonlySet<CrewAction> = new Set(["rename", "remove_member", "delete_crew", "set_moment_schedule"]);
+const OWNER_ONLY: ReadonlySet<CrewAction> = new Set([
+  "rename",
+  "remove_member",
+  "delete_crew",
+  "set_moment_schedule",
+]);
 
 export function canCrew(action: CrewAction, role: CrewRole | null): boolean {
   if (!role) return false;
@@ -101,7 +106,11 @@ export function shotsLeft(rollSize: number, shotsTaken: number): number {
 export type ReviewError = "not_author" | "already_unlocked";
 
 /** Keep / toss your own shots, while live or developing. After the unlock it's "delete" instead. */
-export function canReviewShot(input: { actorId: string; authorId: string; phase: NightPhase }): Result<undefined, ReviewError> {
+export function canReviewShot(input: {
+  actorId: string;
+  authorId: string;
+  phase: NightPhase;
+}): Result<undefined, ReviewError> {
   if (input.actorId !== input.authorId) return err("not_author");
   if (input.phase === "unlocked") return err("already_unlocked");
   return ok();

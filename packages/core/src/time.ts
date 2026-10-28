@@ -96,7 +96,7 @@ export function zonedToInstant(wall: WallTime, tz: string): Date {
   // later one (wall time pushed forward by the gap); for an overlap both do, so take the earlier.
   const reads = (t: number) => {
     const p = localParts(new Date(t), tz);
-    return p.hour === wall.hour && (p.minute === (wall.minute ?? 0));
+    return p.hour === wall.hour && p.minute === (wall.minute ?? 0);
   };
   const a = Math.min(guess, second);
   const b = Math.max(guess, second);

@@ -67,7 +67,9 @@ export function monthInReview(
   const monthShots = shots.filter((s) => ids.has(s.nightId));
   const perNight = new Map<string, number>();
   for (const s of monthShots) perNight.set(s.nightId, (perNight.get(s.nightId) ?? 0) + 1);
-  const top = [...monthShots].sort((a, b) => b.reactions - a.reactions || a.takenAt.getTime() - b.takenAt.getTime())[0];
+  const top = [...monthShots].sort(
+    (a, b) => b.reactions - a.reactions || a.takenAt.getTime() - b.takenAt.getTime(),
+  )[0];
   const busiest = [...perNight.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
   return {
     year,
@@ -81,9 +83,25 @@ export function monthInReview(
   };
 }
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 export function describeMonth(r: MonthReview, crewName: string): string {
-  const parts = [`${r.nights} night${r.nights === 1 ? "" : "s"}`, `${r.photos} photo${r.photos === 1 ? "" : "s"}`];
+  const parts = [
+    `${r.nights} night${r.nights === 1 ? "" : "s"}`,
+    `${r.photos} photo${r.photos === 1 ? "" : "s"}`,
+  ];
   if (r.cities.length > 1) parts.push(`${r.cities.length} cities`);
   return `${MONTHS[r.month - 1]} with ${crewName}: ${parts.join(", ")}`;
 }

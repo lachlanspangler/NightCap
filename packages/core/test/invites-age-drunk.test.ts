@@ -75,13 +75,21 @@ describe("invite tokens", () => {
   });
   it("expires, revokes, and uses up", () => {
     const now = at("2026-10-31T03:00:00Z");
-    const inv = { kind: "crew" as const, expiresAt: inviteExpiry("crew", now), revokedAt: null, maxUses: 2, uses: 0 };
+    const inv = {
+      kind: "crew" as const,
+      expiresAt: inviteExpiry("crew", now),
+      revokedAt: null,
+      maxUses: 2,
+      uses: 0,
+    };
     expect(inviteStatus(inv, now)).toMatchObject({ ok: true });
     expect(inviteStatus(inv, new Date(now.getTime() + 8 * 86_400_000))).toMatchObject({ error: "expired" });
     expect(inviteStatus({ ...inv, revokedAt: now }, now)).toMatchObject({ error: "revoked" });
     expect(inviteStatus({ ...inv, uses: 2 }, now)).toMatchObject({ error: "used_up" });
     expect(inviteStatus({ ...inv, maxUses: null, uses: 999 }, now)).toMatchObject({ ok: true });
-    expect(inviteExpiry("night", now, at("2026-10-31T10:00:00Z")).toISOString()).toBe("2026-10-31T10:00:00.000Z");
+    expect(inviteExpiry("night", now, at("2026-10-31T10:00:00Z")).toISOString()).toBe(
+      "2026-10-31T10:00:00.000Z",
+    );
     expect(() => inviteExpiry("night", now)).toThrow();
   });
 });
@@ -114,8 +122,12 @@ describe("drunk-proof rules", () => {
     expect(isNightMode({ now: at("2026-11-01T02:00:00Z"), tz: CHI, inLiveNight: false })).toBe(true); // 21:00
     expect(isNightMode({ now: at("2026-10-31T10:59:00Z"), tz: CHI, inLiveNight: false })).toBe(true); // 05:59
     expect(isNightMode({ now: at("2026-10-31T11:00:00Z"), tz: CHI, inLiveNight: false })).toBe(false); // 06:00
-    expect(isNightMode({ now: at("2026-11-01T02:00:00Z"), tz: CHI, inLiveNight: true, pref: "never" })).toBe(false);
-    expect(isNightMode({ now: at("2026-10-31T17:00:00Z"), tz: CHI, inLiveNight: false, pref: "always" })).toBe(true);
+    expect(isNightMode({ now: at("2026-11-01T02:00:00Z"), tz: CHI, inLiveNight: true, pref: "never" })).toBe(
+      false,
+    );
+    expect(
+      isNightMode({ now: at("2026-10-31T17:00:00Z"), tz: CHI, inLiveNight: false, pref: "always" }),
+    ).toBe(true);
   });
   it("longer undo and hold at night; bigger targets", () => {
     expect(undoWindowMs(true)).toBe(8000);
@@ -130,7 +142,8 @@ describe("drunk-proof rules", () => {
       expect(shouldDefer(a, true)).toBe(true);
       expect(shouldDefer(a, false)).toBe(false);
     }
-    for (const a of ["block_user", "report", "hide_shot", "delete_shot"] as const) expect(shouldDefer(a, true)).toBe(false);
+    for (const a of ["block_user", "report", "hide_shot", "delete_shot"] as const)
+      expect(shouldDefer(a, true)).toBe(false);
   });
   it("defers until the next 10am", () => {
     expect(deferUntil(at("2026-10-31T07:00:00Z"), CHI).toISOString()).toBe("2026-10-31T15:00:00.000Z");

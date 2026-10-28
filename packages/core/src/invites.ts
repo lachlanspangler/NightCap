@@ -97,7 +97,8 @@ export function inviteLinks(token: string) {
 /** Parses a scanned QR / pasted link / raw token back to a token. */
 export function parseInviteInput(input: string): string | null {
   const s = (input ?? "").trim();
-  const m = s.match(/(?:nightcap:\/\/join\/|nightcap\.app\/j\/)([A-Za-z0-9_-]+)/) ?? s.match(/^([A-Za-z0-9_-]+)$/);
+  const m =
+    s.match(/(?:nightcap:\/\/join\/|nightcap\.app\/j\/)([A-Za-z0-9_-]+)/) ?? s.match(/^([A-Za-z0-9_-]+)$/);
   const token = m?.[1];
   return token && isInviteTokenShape(token) ? token : null;
 }

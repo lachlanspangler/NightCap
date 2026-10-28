@@ -34,52 +34,106 @@ describe("crew actions", () => {
 
 describe("starting and ending nights", () => {
   it("one live night per crew and per person", () => {
-    expect(canStartNight({ role: "member", crewHasLiveNight: false, actorInLiveNight: false })).toMatchObject({ ok: true });
-    expect(canStartNight({ role: null, crewHasLiveNight: false, actorInLiveNight: false })).toMatchObject({ error: "not_member" });
-    expect(canStartNight({ role: "owner", crewHasLiveNight: true, actorInLiveNight: false })).toMatchObject({ error: "crew_has_live_night" });
-    expect(canStartNight({ role: "owner", crewHasLiveNight: false, actorInLiveNight: true })).toMatchObject({ error: "already_in_live_night" });
+    expect(canStartNight({ role: "member", crewHasLiveNight: false, actorInLiveNight: false })).toMatchObject(
+      { ok: true },
+    );
+    expect(canStartNight({ role: null, crewHasLiveNight: false, actorInLiveNight: false })).toMatchObject({
+      error: "not_member",
+    });
+    expect(canStartNight({ role: "owner", crewHasLiveNight: true, actorInLiveNight: false })).toMatchObject({
+      error: "crew_has_live_night",
+    });
+    expect(canStartNight({ role: "owner", crewHasLiveNight: false, actorInLiveNight: true })).toMatchObject({
+      error: "already_in_live_night",
+    });
   });
   it("starter or owner ends", () => {
-    expect(canEndNight({ actorId: "maya", startedBy: "maya", role: "member", phase: "live" })).toMatchObject({ ok: true });
-    expect(canEndNight({ actorId: "theo", startedBy: "maya", role: "owner", phase: "live" })).toMatchObject({ ok: true });
-    expect(canEndNight({ actorId: "jules", startedBy: "maya", role: "member", phase: "live" })).toMatchObject({ error: "not_allowed" });
-    expect(canEndNight({ actorId: "maya", startedBy: "maya", role: "member", phase: "developing" })).toMatchObject({ error: "not_live" });
+    expect(canEndNight({ actorId: "maya", startedBy: "maya", role: "member", phase: "live" })).toMatchObject({
+      ok: true,
+    });
+    expect(canEndNight({ actorId: "theo", startedBy: "maya", role: "owner", phase: "live" })).toMatchObject({
+      ok: true,
+    });
+    expect(canEndNight({ actorId: "jules", startedBy: "maya", role: "member", phase: "live" })).toMatchObject(
+      { error: "not_allowed" },
+    );
+    expect(
+      canEndNight({ actorId: "maya", startedBy: "maya", role: "member", phase: "developing" }),
+    ).toMatchObject({ error: "not_live" });
   });
 });
 
 describe("joining", () => {
-  const base = { phase: "live" as const, alreadyParticipant: false, isCrewMember: true, viaInvite: false, blockedWithAnyParticipant: false, actorInOtherLiveNight: false, participantCount: 3 };
+  const base = {
+    phase: "live" as const,
+    alreadyParticipant: false,
+    isCrewMember: true,
+    viaInvite: false,
+    blockedWithAnyParticipant: false,
+    actorInOtherLiveNight: false,
+    participantCount: 3,
+  };
   it("crew members join directly; guests need an invite", () => {
     expect(canJoinNight(base)).toEqual({ ok: true, value: "joined" });
     expect(canJoinNight({ ...base, isCrewMember: false })).toMatchObject({ error: "no_access" });
-    expect(canJoinNight({ ...base, isCrewMember: false, viaInvite: true })).toEqual({ ok: true, value: "joined" });
+    expect(canJoinNight({ ...base, isCrewMember: false, viaInvite: true })).toEqual({
+      ok: true,
+      value: "joined",
+    });
   });
   it("blocked → generic 'unavailable', checked before anything that would leak existence", () => {
-    expect(canJoinNight({ ...base, blockedWithAnyParticipant: true, isCrewMember: false, phase: "developing" })).toMatchObject({ error: "unavailable" });
+    expect(
+      canJoinNight({ ...base, blockedWithAnyParticipant: true, isCrewMember: false, phase: "developing" }),
+    ).toMatchObject({ error: "unavailable" });
   });
   it("rejoining is idempotent; ended nights can't be joined; one live night per person; cap", () => {
-    expect(canJoinNight({ ...base, alreadyParticipant: true, phase: "unlocked" })).toEqual({ ok: true, value: "already" });
+    expect(canJoinNight({ ...base, alreadyParticipant: true, phase: "unlocked" })).toEqual({
+      ok: true,
+      value: "already",
+    });
     expect(canJoinNight({ ...base, phase: "developing" })).toMatchObject({ error: "not_live" });
-    expect(canJoinNight({ ...base, actorInOtherLiveNight: true })).toMatchObject({ error: "already_in_live_night" });
-    expect(canJoinNight({ ...base, participantCount: NIGHT_MAX_PARTICIPANTS })).toMatchObject({ error: "full" });
+    expect(canJoinNight({ ...base, actorInOtherLiveNight: true })).toMatchObject({
+      error: "already_in_live_night",
+    });
+    expect(canJoinNight({ ...base, participantCount: NIGHT_MAX_PARTICIPANTS })).toMatchObject({
+      error: "full",
+    });
   });
 });
 
 describe("the roll", () => {
   it("24 shots, then full", () => {
-    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 0, rollSize: 24 })).toEqual({ ok: true, value: 23 });
-    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 23, rollSize: 24 })).toEqual({ ok: true, value: 0 });
-    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 24, rollSize: 24 })).toMatchObject({ error: "roll_full" });
-    expect(canShoot({ isParticipant: true, phase: "developing", shotsTaken: 0, rollSize: 24 })).toMatchObject({ error: "not_live" });
-    expect(canShoot({ isParticipant: false, phase: "live", shotsTaken: 0, rollSize: 24 })).toMatchObject({ error: "not_member" });
+    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 0, rollSize: 24 })).toEqual({
+      ok: true,
+      value: 23,
+    });
+    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 23, rollSize: 24 })).toEqual({
+      ok: true,
+      value: 0,
+    });
+    expect(canShoot({ isParticipant: true, phase: "live", shotsTaken: 24, rollSize: 24 })).toMatchObject({
+      error: "roll_full",
+    });
+    expect(canShoot({ isParticipant: true, phase: "developing", shotsTaken: 0, rollSize: 24 })).toMatchObject(
+      { error: "not_live" },
+    );
+    expect(canShoot({ isParticipant: false, phase: "live", shotsTaken: 0, rollSize: 24 })).toMatchObject({
+      error: "not_member",
+    });
     expect(shotsLeft(24, 30)).toBe(0);
     expect(shotsLeft(24, 7)).toBe(17);
   });
   it("review is author-only and before the unlock; delete is author-only", () => {
-    expect(canReviewShot({ actorId: "maya", authorId: "maya", phase: "developing" })).toMatchObject({ ok: true });
+    expect(canReviewShot({ actorId: "maya", authorId: "maya", phase: "developing" })).toMatchObject({
+      ok: true,
+    });
     expect(canReviewShot({ actorId: "maya", authorId: "maya", phase: "live" })).toMatchObject({ ok: true });
-    expect(canReviewShot({ actorId: "theo", authorId: "maya", phase: "developing" })).toMatchObject({ error: "not_author" });
-    expect(canReviewShot({ actorId: "maya", authorId: "maya", phase: "unlocked" })).toMatchObject({ error: "already_unlocked" });
+    expect(canReviewShot({ actorId: "theo", authorId: "maya", phase: "developing" })).toMatchObject({
+      error: "not_author",
+    });
+    expect(canReviewShot({ actorId: "maya", authorId: "maya", phase: "unlocked" })).toMatchObject({
+      error: "already_unlocked",
+    });
     expect(canDeleteShot("maya", "maya")).toBe(true);
     expect(canDeleteShot("theo", "maya")).toBe(false);
   });

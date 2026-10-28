@@ -4,7 +4,9 @@
 > descriptions of these products as I know them, not re-verified this session.
 
 ## The platforms
+
 ### Bumble BFF (2016–; relaunched as a standalone "BFF" app in 2025)
+
 - Swipe-based friend matching with Bumble's photo verification and profile prompts. Groups and
   interest communities were added over time.
 - **Works:** verified identities, an intent-clear context ("I'm here for friends"), and Bumble's
@@ -13,6 +15,7 @@
   feels like dating.
 
 ### Timeleft (Paris 2020–, expanded globally)
+
 - Every week (traditionally Wednesday), **six strangers** matched by a personality quiz meet for
   dinner at a restaurant the app picks. You find out the restaurant shortly before and learn about
   your tablemates at the table. There's often an "after" bar for all the diners in the city that
@@ -27,12 +30,14 @@
   matched lightly, with mutual opt-in afterwards.
 
 ### Meetup (2002–)
+
 - Interest groups with recurring public events and organizer accountability.
 - **Works:** shared interest as the icebreaker, recurrence (you see the same faces, which is how
   friendships form, per Hall), organizers as hosts.
 - **Fails:** quality varies by city. Some groups are spammy or sales-y.
 
 ### Others
+
 - **222** runs curated small-group outings (dinner and drinks) with a matching questionnaire.
 - **Pie** organises small-group events for people new to a city.
 - **Run clubs** are the 2023–25 "new bar" for meeting people: recurring, public, an activity first.
@@ -40,6 +45,7 @@
 - **Hinge / dating apps:** romantic intent pollutes "meet friends" contexts. We separate them.
 
 ## What makes it feel safe (the checklist)
+
 1. **Groups, not 1:1.** Meet 4–8 people, or bring your own crew to meet another crew. Group-to-group
    is the safest and least awkward format: you arrive with friends.
 2. **Public venues only.** Bars and restaurants that are partner or well-known public places.
@@ -64,6 +70,7 @@
 12. **Repeat-meet friendly:** the same table can rebook together. Recurrence builds friendship.
 
 ## What makes it creepy (never)
+
 - "People near you" maps, live locations, or "X is at this bar now".
 - Seeing who viewed your profile.
 - Strangers messaging you after seeing your photo.
@@ -72,6 +79,7 @@
 - Location-based auto-grouping with strangers (Color's lesson).
 
 ## NightCap: City Nights (pillar 4)
+
 - **Opt-in feature:** off by default. Turning it on needs 21+ verification (stubbed) and accepting
   the code of conduct.
 - **City Nights:** a weekly list of curated nights per city ("Thursday Trivia Table at The Nook,
@@ -83,11 +91,12 @@
   never seated together, and people already matched spread out to meet new faces.
 - **Reveal:** tablemates' first names and fun lines show 2 hours before.
 - **During:** the table gets a shared roll (the same night engine, `kind = city`).
-- **Morning after:** the album unlocks for the table *plus* the "Keep in touch?" opt-in for each
+- **Morning after:** the album unlocks for the table _plus_ the "Keep in touch?" opt-in for each
   tablemate. Mutual yes = a "connection", and they can then start a crew together.
 - **Safety:** report or block anyone from the table screen, share-my-plan, leave the table, no DMs.
 
 ## Prototype scope
+
 - City list (seeded: Minneapolis, Chicago, NYC), events seeded in mock mode, signup flow with the
   safety rules, the table reveal, the night roll, the morning "keep in touch" with a mutual match.
 - Stubs: ID verification (self-attest + "verification pending" UI), venue partnerships, payments.

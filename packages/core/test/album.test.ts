@@ -7,16 +7,34 @@ const at = (m: number) => new Date(Date.UTC(2026, 9, 31, 3, m));
 describe("canSeeShot (shared fixture with RLS)", () => {
   for (const c of VISIBILITY_CASES) {
     it(c.name, () => {
-      const shot: ShotFacts = { id: "s1", authorId: c.author, status: c.status, takenAt: at(0), hiddenBy: c.hiddenBy ?? [] };
+      const shot: ShotFacts = {
+        id: "s1",
+        authorId: c.author,
+        status: c.status,
+        takenAt: at(0),
+        hiddenBy: c.hiddenBy ?? [],
+      };
       const blocks = new Set((c.blocks ?? []).map(([a, b]) => blockKey(a, b)));
-      expect(canSeeShot(shot, { viewerId: c.viewer, isParticipant: c.participants.includes(c.viewer), phase: c.phase, blocks })).toBe(c.expected);
+      expect(
+        canSeeShot(shot, {
+          viewerId: c.viewer,
+          isParticipant: c.participants.includes(c.viewer),
+          phase: c.phase,
+          blocks,
+        }),
+      ).toBe(c.expected);
     });
   }
 });
 
 describe("shotVisibility reasons", () => {
   const base: ShotFacts = { id: "s", authorId: "maya", status: "held", takenAt: at(0), hiddenBy: [] };
-  const ctx = { viewerId: "theo", isParticipant: true, phase: "unlocked" as const, blocks: new Set<string>() };
+  const ctx = {
+    viewerId: "theo",
+    isParticipant: true,
+    phase: "unlocked" as const,
+    blocks: new Set<string>(),
+  };
   it("explains each outcome", () => {
     expect(shotVisibility(base, ctx)).toBe("visible");
     expect(shotVisibility(base, { ...ctx, phase: "live" })).toBe("locked");
@@ -41,7 +59,13 @@ describe("assembleAlbum", () => {
   const participantIds = ["maya", "theo", "jules"];
 
   it("while live: only my own shots, plus counts for the teaser", () => {
-    const album = assembleAlbum({ viewerId: "maya", phase: "live", participantIds, shots, blocks: new Set() });
+    const album = assembleAlbum({
+      viewerId: "maya",
+      phase: "live",
+      participantIds,
+      shots,
+      blocks: new Set(),
+    });
     expect(album.shots.map((s) => s.id)).toEqual(["b", "e"]);
     expect(album.mine.map((s) => s.id)).toEqual(["b", "e"]);
     expect(album.counts).toEqual([
@@ -53,14 +77,26 @@ describe("assembleAlbum", () => {
   });
 
   it("after unlock: everyone's visible shots in time order, author sees own hidden one flagged", () => {
-    const album = assembleAlbum({ viewerId: "maya", phase: "unlocked", participantIds, shots, blocks: new Set() });
+    const album = assembleAlbum({
+      viewerId: "maya",
+      phase: "unlocked",
+      participantIds,
+      shots,
+      blocks: new Set(),
+    });
     expect(album.shots.map((s) => s.id)).toEqual(["b", "a", "e"]);
     expect(album.shots.find((s) => s.id === "e")?.hiddenFromOthers).toBe(true);
     expect(album.shots.find((s) => s.id === "b")?.hiddenFromOthers).toBe(false);
   });
 
   it("after unlock for theo: hidden and discarded shots are gone", () => {
-    const album = assembleAlbum({ viewerId: "theo", phase: "unlocked", participantIds, shots, blocks: new Set() });
+    const album = assembleAlbum({
+      viewerId: "theo",
+      phase: "unlocked",
+      participantIds,
+      shots,
+      blocks: new Set(),
+    });
     expect(album.shots.map((s) => s.id)).toEqual(["b", "a"]);
     expect(album.shots.every((s) => !s.hiddenFromOthers)).toBe(true);
   });
@@ -74,7 +110,13 @@ describe("assembleAlbum", () => {
   });
 
   it("non-participants get nothing, not even counts", () => {
-    const album = assembleAlbum({ viewerId: "sam", phase: "unlocked", participantIds, shots, blocks: new Set() });
+    const album = assembleAlbum({
+      viewerId: "sam",
+      phase: "unlocked",
+      participantIds,
+      shots,
+      blocks: new Set(),
+    });
     expect(album.shots).toEqual([]);
     expect(album.total).toBe(0);
   });

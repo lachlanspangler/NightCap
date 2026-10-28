@@ -4,6 +4,7 @@ Append-only. Newest at the bottom. Each entry: what changed, what broke, what I 
 what it felt like.
 
 ## 2026-10-28 — Kickoff
+
 - **Context read:** NightOut (Expo 54 / RN 0.81 / expo-router, Hono API with `createApp()` for
   in-process tests, Supabase + RLS, R2 media, Maestro smoke flow; SECURITY-TODO lesson: an `sk.`
   token prefixed `EXPO_PUBLIC_` shipped in the bundle → only public values ever reach the app).

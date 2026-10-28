@@ -18,7 +18,16 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LEDGER = join(root, "docs/ideas_ledger.json");
 const OUT = join(root, "docs/IDEAS.md");
 
-export const PILLARS = ["night", "sharing", "old_friends", "city", "drunk_ux", "privacy", "platform", "growth"];
+export const PILLARS = [
+  "night",
+  "sharing",
+  "old_friends",
+  "city",
+  "drunk_ux",
+  "privacy",
+  "platform",
+  "growth",
+];
 export const KINDS = ["core", "feature", "polish", "safety", "infra", "research"];
 export const STATUSES = ["backlog", "planned", "building", "built", "parked", "merged", "rejected"];
 const OPEN = new Set(["backlog", "planned", "building"]);
@@ -36,19 +45,25 @@ export function validate(ledger) {
     if (!/^I-\d{3}$/.test(i.id ?? "")) errors.push(`${where}: bad id`);
     if (ids.has(i.id)) errors.push(`${where}: duplicate id`);
     ids.add(i.id);
-    for (const f of ["name", "pitch"]) if (!i[f] || typeof i[f] !== "string") errors.push(`${where}: missing ${f}`);
+    for (const f of ["name", "pitch"])
+      if (!i[f] || typeof i[f] !== "string") errors.push(`${where}: missing ${f}`);
     if (!PILLARS.includes(i.pillar)) errors.push(`${where}: pillar ${i.pillar} not in ${PILLARS}`);
     if (!KINDS.includes(i.kind)) errors.push(`${where}: kind ${i.kind} not in ${KINDS}`);
     if (!STATUSES.includes(i.status)) errors.push(`${where}: status ${i.status} not in ${STATUSES}`);
     for (const f of ["impact", "confidence", "effort"]) {
-      if (!Number.isInteger(i[f]) || i[f] < 1 || i[f] > 5) errors.push(`${where}: ${f} must be an integer 1–5`);
+      if (!Number.isInteger(i[f]) || i[f] < 1 || i[f] > 5)
+        errors.push(`${where}: ${f} must be an integer 1–5`);
     }
-    if (["rejected", "parked", "merged"].includes(i.status) && !i.reason) errors.push(`${where}: ${i.status} needs a reason`);
+    if (["rejected", "parked", "merged"].includes(i.status) && !i.reason)
+      errors.push(`${where}: ${i.status} needs a reason`);
   }
   return errors;
 }
 
-const esc = (s) => String(s ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+const esc = (s) =>
+  String(s ?? "")
+    .replace(/\|/g, "\\|")
+    .replace(/\n/g, " ");
 
 export function render(ledger) {
   const ideas = [...ledger.ideas].sort((a, b) => {
@@ -62,10 +77,10 @@ export function render(ledger) {
     "> Generated from `docs/ideas_ledger.json` by `make ideas`. Edit the JSON (or use `node scripts/ideas.mjs`), not this file.",
     "> Score = impact × confidence ÷ effort (each 1–5), +2 when it's on the demo's critical path (★).",
     "",
-    `**${ledger.ideas.length} ideas**: ` +
-      STATUSES.map((s) => `${s} ${count(s)}`).join(" · "),
+    `**${ledger.ideas.length} ideas**: ` + STATUSES.map((s) => `${s} ${count(s)}`).join(" · "),
     "",
-    "Pillars: " + PILLARS.map((p) => `\`${p}\` ${ledger.ideas.filter((i) => i.pillar === p).length}`).join(" · "),
+    "Pillars: " +
+      PILLARS.map((p) => `\`${p}\` ${ledger.ideas.filter((i) => i.pillar === p).length}`).join(" · "),
     "",
     "| id | status | pillar | name | pitch | closest | I/C/E | score | reason |",
     "|---|---|---|---|---|---|---|---|---|",
@@ -130,7 +145,8 @@ function main(argv) {
     const open = load()
       .ideas.filter((i) => OPEN.has(i.status))
       .sort((a, b) => score(b) - score(a));
-    for (const i of open.slice(0, n)) console.log(`${i.id}  ${String(score(i)).padStart(4)}  [${i.pillar}] ${i.name} — ${i.pitch}`);
+    for (const i of open.slice(0, n))
+      console.log(`${i.id}  ${String(score(i)).padStart(4)}  [${i.pillar}] ${i.name} — ${i.pitch}`);
     return 0;
   }
   if (cmd === "add") {

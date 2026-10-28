@@ -18,7 +18,15 @@ const CHI = "America/Chicago";
 
 function night(startIso: string, tz = CHI, extra: Partial<NightState> = {}): NightState {
   const startedAt = at(startIso);
-  return { kind: "night", tz, startedAt, endedAt: null, unlockedAt: null, ...computeNightSchedule(startedAt, tz), ...extra };
+  return {
+    kind: "night",
+    tz,
+    startedAt,
+    endedAt: null,
+    unlockedAt: null,
+    ...computeNightSchedule(startedAt, tz),
+    ...extra,
+  };
 }
 const p = (userId: string, readyAt: string | null = null, shotCount = 3): ParticipantState => ({
   userId,
@@ -51,7 +59,9 @@ describe("computeNightSchedule", () => {
   it("a 4:30am start doesn't end 30 minutes later", () => {
     const start = at("2026-10-31T09:30:00Z"); // 04:30 CDT
     const s = computeNightSchedule(start, CHI);
-    expect(s.autoEndAt.getTime() - start.getTime()).toBeGreaterThanOrEqual(NIGHT_RULES.minLiveHours * 3_600_000);
+    expect(s.autoEndAt.getTime() - start.getTime()).toBeGreaterThanOrEqual(
+      NIGHT_RULES.minLiveHours * 3_600_000,
+    );
     expect(s.unlockAt.getTime() - start.getTime()).toBeGreaterThanOrEqual(6 * 3_600_000);
   });
 
@@ -71,7 +81,12 @@ describe("computeNightSchedule", () => {
     const lon = computeNightSchedule(at("2026-10-24T20:00:00Z"), "Europe/London"); // 21:00 BST
     expect(lon.unlockAt.toISOString()).toBe("2026-10-25T10:00:00.000Z"); // 10:00 GMT
     const akl = computeNightSchedule(at("2026-12-31T08:00:00Z"), "Pacific/Auckland");
-    expect(localParts(akl.unlockAt, "Pacific/Auckland")).toMatchObject({ year: 2027, month: 1, day: 1, hour: 10 });
+    expect(localParts(akl.unlockAt, "Pacific/Auckland")).toMatchObject({
+      year: 2027,
+      month: 1,
+      day: 1,
+      hour: 10,
+    });
   });
 
   it("invariant: start < autoEnd ≤ earliest ≤ unlock, for every start hour across a year", () => {
@@ -81,7 +96,9 @@ describe("computeNightSchedule", () => {
         for (const tz of [CHI, "Europe/London", "Pacific/Auckland", "Asia/Kolkata", "America/Los_Angeles"]) {
           const s = computeNightSchedule(start, tz);
           expect(s.autoEndAt > start).toBe(true);
-          expect(s.autoEndAt <= s.earliestUnlockAt || s.earliestUnlockAt.getTime() === s.unlockAt.getTime()).toBe(true);
+          expect(
+            s.autoEndAt <= s.earliestUnlockAt || s.earliestUnlockAt.getTime() === s.unlockAt.getTime(),
+          ).toBe(true);
           expect(s.earliestUnlockAt <= s.unlockAt).toBe(true);
           expect(s.unlockAt.getTime() - start.getTime()).toBeGreaterThanOrEqual(6 * 3_600_000);
           expect(s.unlockAt.getTime() - start.getTime()).toBeLessThanOrEqual(36 * 3_600_000);
@@ -125,7 +142,11 @@ describe("advanceNight", () => {
 
   it("unlocks early when everyone is up after 7am", () => {
     const ended = { ...n, endedAt: at("2026-10-31T08:00:00Z") };
-    const ready = [p("maya", "2026-10-31T12:10:00Z"), p("theo", "2026-10-31T12:20:00Z"), p("jules", "2026-10-31T12:30:00Z")];
+    const ready = [
+      p("maya", "2026-10-31T12:10:00Z"),
+      p("theo", "2026-10-31T12:20:00Z"),
+      p("jules", "2026-10-31T12:30:00Z"),
+    ];
     const r = advanceNight(ended, ready, at("2026-10-31T12:30:00Z"));
     expect(r).toMatchObject({ phase: "unlocked", reason: "everyone_ready" });
     expect(r.unlockedAt?.toISOString()).toBe("2026-10-31T12:30:00.000Z");
@@ -133,7 +154,11 @@ describe("advanceNight", () => {
 
   it("does not count a 3am 'I'm good' (sober check)", () => {
     const ended = { ...n, endedAt: at("2026-10-31T08:00:00Z") };
-    const ready = [p("maya", "2026-10-31T08:05:00Z"), p("theo", "2026-10-31T12:20:00Z"), p("jules", "2026-10-31T12:30:00Z")];
+    const ready = [
+      p("maya", "2026-10-31T08:05:00Z"),
+      p("theo", "2026-10-31T12:20:00Z"),
+      p("jules", "2026-10-31T12:30:00Z"),
+    ];
     expect(advanceNight(ended, ready, at("2026-10-31T13:00:00Z")).phase).toBe("developing");
   });
 
@@ -150,17 +175,29 @@ describe("advanceNight", () => {
 
   it("is a no-op once unlocked", () => {
     const done = { ...n, endedAt: at("2026-10-31T10:00:00Z"), unlockedAt: at("2026-10-31T15:00:00Z") };
-    expect(advanceNight(done, crew, at("2026-11-02T00:00:00Z"))).toEqual({ phase: "unlocked", changed: false });
+    expect(advanceNight(done, crew, at("2026-11-02T00:00:00Z"))).toEqual({
+      phase: "unlocked",
+      changed: false,
+    });
   });
 });
 
 describe("moments", () => {
   const opens = at("2026-10-31T02:00:00Z");
   const closes = at("2026-10-31T04:00:00Z");
-  const m: NightState = { kind: "moment", tz: CHI, startedAt: opens, endedAt: null, unlockedAt: null, ...momentSchedule(opens, closes) };
+  const m: NightState = {
+    kind: "moment",
+    tz: CHI,
+    startedAt: opens,
+    endedAt: null,
+    unlockedAt: null,
+    ...momentSchedule(opens, closes),
+  };
 
   it("stays live until everyone has posted", () => {
-    expect(advanceNight(m, [p("a", null, 1), p("b", null, 0)], at("2026-10-31T03:00:00Z")).phase).toBe("live");
+    expect(advanceNight(m, [p("a", null, 1), p("b", null, 0)], at("2026-10-31T03:00:00Z")).phase).toBe(
+      "live",
+    );
   });
   it("reveals as soon as everyone has posted", () => {
     const r = advanceNight(m, [p("a", null, 1), p("b", null, 1)], at("2026-10-31T03:00:00Z"));
@@ -194,12 +231,16 @@ describe("canMarkReady / effectiveEarliestUnlock", () => {
     expect(canMarkReady(ended, at("2026-10-31T12:01:00Z"))).toEqual({ ok: true });
   });
   it("a hand-ended night keeps its own morning's 7am", () => {
-    expect(effectiveEarliestUnlock(n, at("2026-10-31T05:00:00Z"), CHI).toISOString()).toBe("2026-10-31T12:00:00.000Z");
+    expect(effectiveEarliestUnlock(n, at("2026-10-31T05:00:00Z"), CHI).toISOString()).toBe(
+      "2026-10-31T12:00:00.000Z",
+    );
     expect(effectiveEarliestUnlock(n, null, CHI).toISOString()).toBe(n.earliestUnlockAt.toISOString());
   });
   it("phaseOf reads persisted state", () => {
     expect(phaseOf({ endedAt: null, unlockedAt: null })).toBe("live");
     expect(phaseOf({ endedAt: at("2026-01-01T00:00:00Z"), unlockedAt: null })).toBe("developing");
-    expect(phaseOf({ endedAt: at("2026-01-01T00:00:00Z"), unlockedAt: at("2026-01-01T00:00:00Z") })).toBe("unlocked");
+    expect(phaseOf({ endedAt: at("2026-01-01T00:00:00Z"), unlockedAt: at("2026-01-01T00:00:00Z") })).toBe(
+      "unlocked",
+    );
   });
 });

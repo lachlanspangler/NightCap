@@ -56,8 +56,12 @@ export function computeNudges(input: {
   const { members, closedMoments, openMoment, sent, now } = input;
   const out: Nudge[] = [];
   const recentTo = (uid: string) =>
-    sent.some((s) => s.toUserId === uid && s.kind === "quiet_friend" && now.getTime() - s.sentAt.getTime() < NUDGE_RULES.perRecipientMs) ||
-    out.some((n) => n.toUserId === uid && n.kind === "quiet_friend");
+    sent.some(
+      (s) =>
+        s.toUserId === uid &&
+        s.kind === "quiet_friend" &&
+        now.getTime() - s.sentAt.getTime() < NUDGE_RULES.perRecipientMs,
+    ) || out.some((n) => n.toUserId === uid && n.kind === "quiet_friend");
   const recentAbout = (uid: string) =>
     sent.some((s) => s.aboutUserId === uid && now.getTime() - s.sentAt.getTime() < NUDGE_RULES.perSubjectMs);
 
@@ -85,7 +89,11 @@ export function computeNudges(input: {
       for (const m of members) {
         if (muted(m, now) || openMoment.postedUserIds.includes(m.userId)) continue;
         const already = sent.some(
-          (s) => s.toUserId === m.userId && s.kind === "moment_closing" && openMoment.closesAt.getTime() - s.sentAt.getTime() <= NUDGE_RULES.closingSoonMs && s.sentAt < openMoment.closesAt,
+          (s) =>
+            s.toUserId === m.userId &&
+            s.kind === "moment_closing" &&
+            openMoment.closesAt.getTime() - s.sentAt.getTime() <= NUDGE_RULES.closingSoonMs &&
+            s.sentAt < openMoment.closesAt,
         );
         if (!already) out.push({ toUserId: m.userId, aboutUserId: null, kind: "moment_closing" });
       }

@@ -3,10 +3,12 @@
 **Status:** accepted · 2026-10-28
 
 ## Context
+
 The demo must run with zero keys. Prod uses Supabase Auth. NightOut's lesson: secrets prefixed
 `EXPO_PUBLIC_` ship in the bundle.
 
 ## Decision
+
 - One JWT verification path in the API (HS256): `SUPABASE_JWT_SECRET` in prod, `DEV_JWT_SECRET` in mock.
   `make setup` generates the dev secret into `.env` (gitignored). If it's missing at runtime the API
   generates an ephemeral random one and logs that tokens won't survive a restart.
@@ -19,4 +21,5 @@ The demo must run with zero keys. Prod uses Supabase Auth. NightOut's lesson: se
 - Tokens are stored in `expo-secure-store`.
 
 ## Consequences
+
 - A real phone-OTP/Apple sign-in needs a Supabase project (STATUS → Needs from you).

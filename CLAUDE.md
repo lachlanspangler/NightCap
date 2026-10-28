@@ -1,7 +1,7 @@
 # CLAUDE.md — NightCap
 
 **NightCap: the album from last night.** Friends snap photos into one shared roll while they're
-out. Nobody sees anything until the morning after, when the album *develops* and everyone gets the
+out. Nobody sees anything until the morning after, when the album _develops_ and everyone gets the
 whole night at once. BeReal for drunk people: friends-only, nothing posts by accident, and you get
 the photos the morning after without the "send me those" chase.
 
@@ -14,6 +14,7 @@ Sister app: `~/Desktop/NightOut` (anonymous venue feeds). Same stack family, **s
 bundle id** (`com.lachlanspangler.nightcap`). See "Running alongside NightOut".
 
 ## Start every session like this
+
 1. `make doctor` (self-healing checks). Anything red comes first.
 2. Read the top of `docs/STATUS.md` and the last ~3 entries of `docs/DIARY.md` (newest at bottom).
 3. `make ideas-next` for the highest-scoring open ideas.
@@ -22,12 +23,14 @@ bundle id** (`com.lachlanspangler.nightcap`). See "Running alongside NightOut".
    (keys, accounts). Stub them, list them in STATUS → "Needs from you", move on.
 
 ## Running alongside NightOut (hard rules)
+
 Another Claude session builds `~/Desktop/NightOut` on this laptop with its own simulator, Metro and
 builds. The laptop has crashed from overload before.
+
 - **One agent.** No parallel sub-agents. Review agents run one at a time, only while we're idle.
 - **`~/Desktop/NightOut` is read-only.** Read it to learn; never edit, build, test, install or run in it.
 - **Our simulator only:** `NightCap iPhone` (created with `scripts/sim.sh create`; the UDID lives in
-  `.sim-udid`, gitignored). Only ever boot / install / screenshot / record / shut down / erase *that*
+  `.sim-udid`, gitignored). Only ever boot / install / screenshot / record / shut down / erase _that_
   UDID. Never `simctl shutdown all`, never touch other devices, never quit Simulator.app.
 - **Our ports:** Metro/Expo **8091** (never 8081), API **8788**, local Supabase (if ever run) on
   **54421–54429** with `project_id = "nightcap"` (`supabase/config.toml`). All in `.env.example`.
@@ -42,24 +45,26 @@ builds. The laptop has crashed from overload before.
 - At the end: shut down only our simulator and the servers we started.
 
 ## Commands
-| | |
-|---|---|
-| `make setup` | one command: deps, `.env` from `.env.example` (dev secrets generated), demo photos, git hooks |
-| `make check` | typecheck + lint + format + all tests (core, db/RLS, api, mobile) + ledger sync + doctor. Run before every commit |
-| `make test` | all test suites without lint |
-| `make api` | API on :8788 in mock mode (PGlite + local media), seeded demo data |
-| `make metro` | Expo/Metro on :8091 |
-| `make demo` | API + Metro in the background (PIDs in `.run/`), boots our sim, opens the app |
-| `make stop` | stops only what `make demo` started |
-| `make sim-shot NAME=x` | screenshot our simulator → `docs/media/x.png` |
-| `make maestro` | waits for quiet, then runs `.maestro/` flows against our simulator |
-| `make doctor` / `make heal` | self-healing checks / plus safe automatic repairs |
-| `make ideas` / `make ideas-next` | regenerate `docs/IDEAS.md` from the ledger / top open ideas |
+
+|                                  |                                                                                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `make setup`                     | one command: deps, `.env` from `.env.example` (dev secrets generated), demo photos, git hooks                     |
+| `make check`                     | typecheck + lint + format + all tests (core, db/RLS, api, mobile) + ledger sync + doctor. Run before every commit |
+| `make test`                      | all test suites without lint                                                                                      |
+| `make api`                       | API on :8788 in mock mode (PGlite + local media), seeded demo data                                                |
+| `make metro`                     | Expo/Metro on :8091                                                                                               |
+| `make demo`                      | API + Metro in the background (PIDs in `.run/`), boots our sim, opens the app                                     |
+| `make stop`                      | stops only what `make demo` started                                                                               |
+| `make sim-shot NAME=x`           | screenshot our simulator → `docs/media/x.png`                                                                     |
+| `make maestro`                   | waits for quiet, then runs `.maestro/` flows against our simulator                                                |
+| `make doctor` / `make heal`      | self-healing checks / plus safe automatic repairs                                                                 |
+| `make ideas` / `make ideas-next` | regenerate `docs/IDEAS.md` from the ledger / top open ideas                                                       |
 
 Node 20.19+ (`.nvmrc`). `.npmrc` pins the public npm registry (the machine default is the corp
 registry, which needs Midway). Expo SDK 54 (SDK 55+ needs Node 22). Vitest 3 (newer needs Node 22).
 
 ## Architecture
+
 ```
 packages/core/     PURE domain logic. No I/O, no Date.now(), no Math.random (ESLint-enforced).
                    clock.ts (injected Clock), time.ts (tz-aware local-time math), night.ts (phases,
@@ -80,14 +85,16 @@ supabase/          config.toml for a local Supabase stack (project_id nightcap, 
 scripts/           wait-for-quiet.sh, sim.sh, doctor.mjs, ideas.mjs, gen-photos.mjs, dev env tools
 docs/              WORKFLOW STATUS DIARY IDEAS ideas_ledger.json adr/ research/ media/ reviews/
 ```
+
 Data flow: mobile → API (JWT) → `withUserTx` (role authenticated + claims) → SQL, RLS-checked.
 Time-based transitions (night auto-end, unlock) are computed by `@nightcap/core` with an injected
 clock and persisted by the API (`advanceNight`); RLS checks only persisted state (`unlocked_at`),
 never `now()`. That keeps time travel (dev) and tests deterministic.
 
 ## Rules that must stay true
+
 1. **Nothing is visible to anyone else before the night unlocks.** Authors see their own shots;
-   others see counts only. Enforced in core (`album.ts`) *and* RLS (`shot_select` policy).
+   others see counts only. Enforced in core (`album.ts`) _and_ RLS (`shot_select` policy).
 2. **Friends-only by default.** A night album is visible only to people who joined that night.
    Nothing is ever public. There is no public profile, no follower graph.
 3. **No location leaks.** No GPS is stored with shots; EXIF/XMP is stripped server-side before
@@ -102,6 +109,7 @@ never `now()`. That keeps time travel (dev) and tests deterministic.
 8. **Demo data is demo.** Seeded users/crews/nights are flagged `is_demo` and only load in mock mode.
 
 ## Conventions
+
 - TypeScript strict everywhere. Zod at the API boundary. Pure core functions, injected clocks.
 - Tests first for rules (night timing, visibility, consent, permissions); RLS tests for every table.
 - Commits: small, one logical change, prefixes `core:` `db:` `api:` `mobile:` `test:` `docs:`
@@ -114,6 +122,7 @@ never `now()`. That keeps time travel (dev) and tests deterministic.
 - Verify by running: after any UI change, run it on our simulator, screenshot it, look at it.
 
 ## Gotchas
+
 - Corp npm registry is the machine default → `.npmrc` pins the public one.
 - NightOut uses Metro 8095 and its own sim; never reuse its ports or devices.
 - Disk was ~31 GB free at kickoff: prefer Expo Go over a full dev build (ADR 0007).

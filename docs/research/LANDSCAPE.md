@@ -8,7 +8,7 @@
 ## TL;DR: the eight lessons NightCap is built on
 
 1. **Delay is the magic, not the filter.** Dispo, Lapse and Gudak all showed that photos that
-   *develop* later turn into an event of their own: anticipation, then a shared reveal. BeReal's
+   _develop_ later turn into an event of their own: anticipation, then a shared reveal. BeReal's
    "you can't see theirs until you post yours" works the same way. NightCap's morning unlock is this
    mechanic put where it belongs: the morning after a night out.
 2. **A once-a-day obligation goes stale; a moment that's actually happening doesn't.** BeReal's
@@ -16,12 +16,12 @@
    event with a natural start, a natural end and a natural reveal time. We never need a fake ping
    for the core loop. (Weekly moments for long-distance crews are opt-in and crew-scheduled.)
 3. **The unit of sharing is the group that was there, not a follower graph.** Shared albums (Google,
-   Apple, Partiful's event photos, POV's event cameras) win when the album *is* the event. Poparazzi,
+   Apple, Partiful's event photos, POV's event cameras) win when the album _is_ the event. Poparazzi,
    Color and BeReal's Discovery feed all leaked out to strangers and lost the intimacy.
 4. **Someone has to make the album, and nobody does.** Google/Apple shared albums fail at creation
    and invite time, not at viewing. Whoever's holding the phone at 1am won't set up an album. The
    night must form itself: one tap from the crew, and a code/QR anyone can join in two seconds.
-5. **Posting other people needs consent built in.** Poparazzi (only photos *of* friends) turned
+5. **Posting other people needs consent built in.** Poparazzi (only photos _of_ friends) turned
    into a harassment and insecurity vector and shut down. Tagging must be opt-in, with untag/hide in
    one tap.
 6. **Location features attract the worst press.** Snap Map's launch backlash, Find My/AirTag
@@ -38,6 +38,7 @@
 ## The apps
 
 ### BeReal (2020–; acquired by Voodoo 2024)
+
 - **What:** a random daily "⚠️ Time to BeReal ⚠️" notification. Two minutes to take a dual-camera
   photo. You can only see friends' posts after you post yours. Late posts are labelled.
 - **Peak:** #1 on the US App Store in summer 2022, Apple's iPhone App of the Year 2022. Reported
@@ -56,11 +57,12 @@
   people stretched the 2-minute rule to capture them.
 
 ### Locket Widget (2022–)
+
 - **What:** your friends' photos appear on your home-screen widget. Built for a small circle
   (originally capped at 5, later 20). Matt Moss built it for a long-distance girlfriend.
 - **Traction:** hit #1 on the App Store in January 2022 and has stayed relevant with Gen Z. It
   added video, celebrity lockets and an in-app history.
-- **What worked:** zero-effort *ambient* presence ("my friend is thinking of me"), a tiny trusted
+- **What worked:** zero-effort _ambient_ presence ("my friend is thinking of me"), a tiny trusted
   circle, the long-distance origin story.
 - **What didn't / limits:** content is single photos with no context, and the widget is the whole
   product. Without novelty, sending tapers off.
@@ -68,6 +70,7 @@
   the home screen is a later idea (I-035). The lesson is ambient presence for old friends.
 
 ### Dispo (2019–; faded after 2021)
+
 - **What:** a disposable-camera app. Photos "develop" at 9am the next morning, and there are shared
   "rolls". Co-founded by David Dobrik.
 - **Traction:** a viral invite-only relaunch in early 2021 and a reported $20M Series A in
@@ -79,10 +82,11 @@
 - **What didn't:** the founder-brand dependency, a public feed that undercut the intimacy, and
   rolls you had to set up yourself.
 - **For NightCap:** Dispo proved people love waking up to developed photos. It had no structure
-  for *who was there* and no consent model. NightCap's night = Dispo's roll that forms itself, is
+  for _who was there_ and no consent model. NightCap's night = Dispo's roll that forms itself, is
   private to who was there, and has consent built in.
 
 ### Lapse (2021–; viral 2023–24)
+
 - **What:** a "friends not followers" disposable camera. Photos develop later. Journal-style
   profiles.
 - **Traction:** topped the App Store in 2023.
@@ -93,17 +97,19 @@
   blast.
 
 ### Poparazzi (2021–2023)
-- **What:** you can't post yourself, only photos *of* your friends ("be each other's paparazzi").
+
+- **What:** you can't post yourself, only photos _of_ your friends ("be each other's paparazzi").
 - **Traction:** #1 on the App Store in May 2021. Shut down in May 2023, with the team saying it
   couldn't find sustained engagement.
 - **What went wrong:** a novelty mechanic with no reason to return, and real consent problems.
   People were posted without wanting to be, in unflattering photos, with no way to stop it.
-- **For NightCap:** night photos are mostly photos *of* friends, so this is our biggest risk.
+- **For NightCap:** night photos are mostly photos _of_ friends, so this is our biggest risk.
   Hence: (1) albums only go to the people who were there, (2) tags are opt-in, (3) anyone in a
   photo can hide it with one tap, (4) a morning review before anything is revealed. Poparazzi
   minus the harm is roughly our consent model.
 
 ### Snapchat Memories, Group Stories, Snap Map
+
 - **Memories (2016):** a private backup of snaps, plus "Flashbacks" that resurface "on this day"
   content. The resurfacing is one of Snapchat's strongest retention loops.
 - **Group Stories / Shared Stories:** many contributors to one story, close to "one album per
@@ -114,6 +120,7 @@
   ship live location.
 
 ### Google Photos shared albums / Apple iCloud Shared Albums & Shared Library
+
 - **Google:** shared albums anyone can add to via a link. Face grouping. "Memories" resurfacing.
   Partner sharing. Cross-platform, but the person holding the album has to set it up and send the
   link.
@@ -132,16 +139,18 @@
   plus a big 4-digit night code or QR.
 
 ### Partiful (2020–)
+
 - **What:** fun, aesthetic event invites by SMS link. Guests don't need the app. RSVP, a
   comments wall, and photos shared on the event page after it. Huge with Gen Z and twenty-somethings.
   Recognised as a best app of 2024 by Google Play.
 - **What works:** the event is the unit, the link is the onboarding, it feels like a party not a
   calendar, and there's a host. It works across platforms and needs no account to view.
 - **For NightCap:** join-by-link with no friction, and "the night is the unit". Partiful owns the
-  *before* (invites). NightCap owns the *during and after* (the roll and the morning reveal). An
+  _before_ (invites). NightCap owns the _during and after_ (the roll and the morning reveal). An
   "import a Partiful link" integration is a later idea.
 
 ### POV, The Guest, WedShoots, Lense and other "event disposable cameras"
+
 - **What:** the host makes an event and guests scan a QR to get a disposable-camera web app.
   Photos reveal after the event, often to the host first. Mostly weddings, plus parties and
   corporate events. Usually freemium per event.
@@ -154,18 +163,21 @@
   group night, with the crew as the persistent unit.
 
 ### Gudak / Huji Cam (2017–)
+
 - **Gudak:** a retro disposable camera with a 24-exposure roll, a tiny viewfinder, and 3 days to
   develop. A paid hit in Asia.
 - **For NightCap:** a **roll limit** (24 exposures per person per night) is fun, drunk-proof
   (no 400 blurry shots) and makes each tap matter.
 
 ### Retro (2022–)
+
 - **What:** a weekly photo journal for close friends, made by ex-Instagram people. You see your
   friends' weeks.
 - **For NightCap:** a weekly cadence suits long-distance friends better than daily. It informs the
   weekly Nightcap moment.
 
 ### Color (2011–2012), Flock by Bump (2012–2013), Albumatic (2012)
+
 - **Color** raised a famous ~$41M pre-launch to auto-share photos with anyone physically nearby,
   strangers included. It launched to an empty, confusing network, its staff were acqui-hired, and
   it shut down in 2012.
@@ -174,24 +186,27 @@
 - **Albumatic** made automatic location-and-time albums and faded quickly.
 - **Lesson:** auto-grouping by presence is the right instinct but has two failure modes:
   (1) **strangers** (creepy, spammy), (2) **cold start** (no friends on the app). NightCap groups
-  only through people who *chose* to be together: your crew, someone who scanned your code, or a
+  only through people who _chose_ to be together: your crew, someone who scanned your code, or a
   City Night table you signed up for.
 
 ### Instagram (Close Friends, photo dumps, Collab posts, Candid)
+
 - **Photo dumps** (carousels of 10–20 casual photos) became the de facto "post the night" format
   around 2021–22, made the morning after from photos collected from friends.
 - **Close Friends** shows the demand for a smaller audience.
 - **Candid** was Instagram's BeReal clone (2022). It didn't stick.
 - **For NightCap:** a one-tap "make a dump" export from the album (pick 10, order, share). The
-  album is where the dump comes *from*, so we feed Instagram rather than compete with it.
+  album is where the dump comes _from_, so we feed Instagram rather than compete with it.
 
 ### WhatsApp / iMessage group chats
+
 - **The real incumbent.** The night's photos end up scattered across the group chat at 11am,
   compressed. Live Photos and videos get lost. Half the group never sends theirs.
 - **For NightCap:** we don't replace the chat. We post one link into it ("Last night's album is
   ready: 63 photos from 5 people") and that link is the growth loop.
 
 ### IRL (2017–2023)
+
 - A social events app that raised big rounds and shut down in 2023 after its board found most of
   its claimed users were fake.
 - **Lesson:** don't inflate. Our seed/demo data is flagged `is_demo` and never mixed with real data.
@@ -199,6 +214,7 @@
 ### Meeting people: see MEET_PEOPLE.md (Bumble BFF, Timeleft, Meetup, Pie, 222)
 
 ### "Timeshare": **unverified**
+
 The brief lists "timeshare". I couldn't find a photo or friends app by that name; web results are
 all vacation timeshares. I won't invent details. Possibly a small or new app, or a different name.
 Flagged in STATUS → "Needs from you". If it's an app for sharing time or presence with friends
@@ -208,15 +224,15 @@ Flagged in STATUS → "Needs from you". If it's an app for sharing time or prese
 
 ## Positioning
 
-| | BeReal | Dispo/Lapse | Shared albums | POV (events) | Partiful | **NightCap** |
-|---|---|---|---|---|---|---|
-| Unit | your day | your roll | an album | one event | one event | **the night, and the crew** |
-| Who sees | friends (+discovery) | friends | invitees | host + guests | guests | **only who was there** |
-| Reveal | after you post | next morning | instant | after event | — | **morning after** |
-| Setup | none | make a roll | make + invite | host buys | host makes | **one tap from crew, code/QR** |
-| Consent for subjects | none | none | none | none | — | **opt-in tags, hide-me, morning review** |
-| Repeatable | daily | yes | rarely | no | per event | **every weekend + weekly moments** |
-| Meet people | no | no | no | no | indirectly | **opt-in City Nights, groups, public venues** |
+|                      | BeReal               | Dispo/Lapse  | Shared albums | POV (events)  | Partiful   | **NightCap**                                  |
+| -------------------- | -------------------- | ------------ | ------------- | ------------- | ---------- | --------------------------------------------- |
+| Unit                 | your day             | your roll    | an album      | one event     | one event  | **the night, and the crew**                   |
+| Who sees             | friends (+discovery) | friends      | invitees      | host + guests | guests     | **only who was there**                        |
+| Reveal               | after you post       | next morning | instant       | after event   | —          | **morning after**                             |
+| Setup                | none                 | make a roll  | make + invite | host buys     | host makes | **one tap from crew, code/QR**                |
+| Consent for subjects | none                 | none         | none          | none          | —          | **opt-in tags, hide-me, morning review**      |
+| Repeatable           | daily                | yes          | rarely        | no            | per event  | **every weekend + weekly moments**            |
+| Meet people          | no                   | no           | no            | no            | indirectly | **opt-in City Nights, groups, public venues** |
 
 **Our wedge:** "the morning after". It's the one time every group wants every photo, and no app
 owns it.

@@ -1,33 +1,61 @@
 import { describe, expect, it } from "vitest";
-import { AUTO_HIDE_REASONS, canHide, canSeeTag, canUnhide, createTag, REPORT_LABELS, REPORT_REASONS, respondToTag, type Tag } from "../src/consent";
+import {
+  AUTO_HIDE_REASONS,
+  canHide,
+  canSeeTag,
+  canUnhide,
+  createTag,
+  REPORT_LABELS,
+  REPORT_REASONS,
+  respondToTag,
+  type Tag,
+} from "../src/consent";
 
 const base = { taggerIsParticipant: true, subjectIsParticipant: true, blockedEitherWay: false };
 
 describe("tags", () => {
   it("tagging someone else starts pending", () => {
-    expect(createTag({ ...base, taggerId: "maya", subjectId: "theo" })).toEqual({ ok: true, value: "pending" });
+    expect(createTag({ ...base, taggerId: "maya", subjectId: "theo" })).toEqual({
+      ok: true,
+      value: "pending",
+    });
   });
   it("self-tag is approved immediately", () => {
-    expect(createTag({ ...base, taggerId: "theo", subjectId: "theo" })).toEqual({ ok: true, value: "approved" });
+    expect(createTag({ ...base, taggerId: "theo", subjectId: "theo" })).toEqual({
+      ok: true,
+      value: "approved",
+    });
   });
   it("only participants can tag, and only participants can be tagged", () => {
-    expect(createTag({ ...base, taggerIsParticipant: false, taggerId: "sam", subjectId: "theo" })).toMatchObject({ error: "not_participant" });
-    expect(createTag({ ...base, subjectIsParticipant: false, taggerId: "maya", subjectId: "sam" })).toMatchObject({ error: "subject_not_participant" });
+    expect(
+      createTag({ ...base, taggerIsParticipant: false, taggerId: "sam", subjectId: "theo" }),
+    ).toMatchObject({ error: "not_participant" });
+    expect(
+      createTag({ ...base, subjectIsParticipant: false, taggerId: "maya", subjectId: "sam" }),
+    ).toMatchObject({ error: "subject_not_participant" });
   });
   it("blocked pairs can't tag each other", () => {
-    expect(createTag({ ...base, blockedEitherWay: true, taggerId: "maya", subjectId: "theo" })).toMatchObject({ error: "blocked" });
+    expect(createTag({ ...base, blockedEitherWay: true, taggerId: "maya", subjectId: "theo" })).toMatchObject(
+      { error: "blocked" },
+    );
   });
   it("no duplicate live tags, but re-tagging after an untag is allowed", () => {
     const t: Tag = { shotId: "s", subjectId: "theo", taggerId: "maya", status: "pending" };
-    expect(createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: t })).toMatchObject({ error: "already_tagged" });
-    expect(createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: { ...t, status: "removed" } })).toMatchObject({ ok: true });
+    expect(createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: t })).toMatchObject({
+      error: "already_tagged",
+    });
+    expect(
+      createTag({ ...base, taggerId: "jules", subjectId: "theo", existing: { ...t, status: "removed" } }),
+    ).toMatchObject({ ok: true });
   });
   it("only the subject responds", () => {
     const t: Tag = { shotId: "s", subjectId: "theo", taggerId: "maya", status: "pending" };
     expect(respondToTag(t, "maya", "approve")).toMatchObject({ error: "not_subject" });
     expect(respondToTag(t, "theo", "approve")).toEqual({ ok: true, value: "approved" });
     expect(respondToTag(t, "theo", "remove")).toEqual({ ok: true, value: "removed" });
-    expect(respondToTag({ ...t, status: "removed" }, "theo", "approve")).toMatchObject({ error: "already_removed" });
+    expect(respondToTag({ ...t, status: "removed" }, "theo", "approve")).toMatchObject({
+      error: "already_removed",
+    });
   });
   it("pending tags are visible only to subject and tagger", () => {
     const t: Tag = { shotId: "s", subjectId: "theo", taggerId: "maya", status: "pending" };
@@ -42,10 +70,18 @@ describe("tags", () => {
 
 describe("hide-me", () => {
   it("any participant except the author can hide", () => {
-    expect(canHide({ actorId: "theo", authorId: "maya", isParticipant: true, alreadyHiddenByActor: false })).toMatchObject({ ok: true });
-    expect(canHide({ actorId: "maya", authorId: "maya", isParticipant: true, alreadyHiddenByActor: false })).toMatchObject({ error: "author_should_delete" });
-    expect(canHide({ actorId: "sam", authorId: "maya", isParticipant: false, alreadyHiddenByActor: false })).toMatchObject({ error: "not_participant" });
-    expect(canHide({ actorId: "theo", authorId: "maya", isParticipant: true, alreadyHiddenByActor: true })).toMatchObject({ error: "already_hidden" });
+    expect(
+      canHide({ actorId: "theo", authorId: "maya", isParticipant: true, alreadyHiddenByActor: false }),
+    ).toMatchObject({ ok: true });
+    expect(
+      canHide({ actorId: "maya", authorId: "maya", isParticipant: true, alreadyHiddenByActor: false }),
+    ).toMatchObject({ error: "author_should_delete" });
+    expect(
+      canHide({ actorId: "sam", authorId: "maya", isParticipant: false, alreadyHiddenByActor: false }),
+    ).toMatchObject({ error: "not_participant" });
+    expect(
+      canHide({ actorId: "theo", authorId: "maya", isParticipant: true, alreadyHiddenByActor: true }),
+    ).toMatchObject({ error: "already_hidden" });
   });
   it("only the hider can un-hide (not the author)", () => {
     expect(canUnhide("theo", "theo")).toBe(true);
