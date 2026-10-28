@@ -173,3 +173,18 @@ describe("formTables properties (seeded fuzz)", () => {
     }
   });
 });
+
+describe("formTables never seats a blocked pair, even inside one group", () => {
+  it("splits a group block that contains a blocked pair", () => {
+    const group: SignupBlock = {
+      blockId: "g",
+      members: [
+        { userId: "a", gender: "unspecified" },
+        { userId: "b", gender: "unspecified" },
+      ],
+    };
+    const r = formTables([group, solo("c"), solo("d")], { min: 2, max: 4 }, pairSet([["a", "b"]]));
+    for (const t of r.tables) expect(t.userIds.includes("a") && t.userIds.includes("b")).toBe(false);
+    expect(r.tables.flatMap((t) => t.userIds).sort()).toEqual(["a", "b", "c", "d"]);
+  });
+});

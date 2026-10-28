@@ -157,40 +157,56 @@ describe("City Nights", () => {
     ).toBe(403);
   });
 
-  it("crewmates sign up together and are seated together", async () => {
+  it("crewmates sit together only when invited, and never across a block", async () => {
     const t = await testApp();
     const id = await event(t, 5, 3, 4);
     const a = await cityReady(t, "A");
     const b = await cityReady(t, "B");
-    const crew = (await t.req("POST", "/crews", { token: a.token, json: { name: "Duo" } })).body.crew;
-    const inv = (await t.req("POST", `/crews/${crew.id}/invites`, { token: a.token })).body;
-    await t.req("POST", "/invites/redeem", { token: b.token, json: { token: inv.token } });
+    const x = await cityReady(t, "X");
+    const crew = (await t.req("POST", "/crews", { token: a.token, json: { name: "Trio" } })).body.crew;
+    for (const u of [b, x]) {
+      const inv = (await t.req("POST", `/crews/${crew.id}/invites`, { token: a.token })).body;
+      await t.req("POST", "/invites/redeem", { token: u.token, json: { token: inv.token } });
+    }
     const others = [
       await cityReady(t, "C"),
       await cityReady(t, "D"),
       await cityReady(t, "E"),
       await cityReady(t, "F"),
     ];
+    // Not signed up yet / not invited: the same generic 404.
     expect(
       (await t.req("POST", `/city/events/${id}/signup`, { token: b.token, json: { withUserId: a.id } }))
         .status,
-    ).toBe(404); // a hasn't signed up
-    await t.req("POST", `/city/events/${id}/signup`, { token: a.token, json: {} });
+    ).toBe(404);
+    await t.req("POST", `/city/events/${id}/signup`, { token: a.token, json: { inviteFriendIds: [b.id] } });
+    expect(
+      (await t.req("POST", `/city/events/${id}/signup`, { token: x.token, json: { withUserId: a.id } }))
+        .status,
+    ).toBe(404); // crewmate, but not invited
     expect(
       (await t.req("POST", `/city/events/${id}/signup`, { token: b.token, json: { withUserId: a.id } }))
         .status,
     ).toBe(201);
-    expect(
-      (
-        await t.req("POST", `/city/events/${id}/signup`, {
-          token: others[0]!.token,
-          json: { withUserId: a.id },
-        })
-      ).status,
-    ).toBe(404); // not crewmates
     for (const o of others) await t.req("POST", `/city/events/${id}/signup`, { token: o.token, json: {} });
     t.clock.advance(3.5 * 3_600_000);
     const table = (await t.req("GET", `/city/events/${id}`, { token: a.token })).body.event.table;
     expect(table.people.map((p: { id: string }) => p.id)).toContain(b.id);
+  });
+
+  it("an invited friend who is blocked can't join the group", async () => {
+    const t = await testApp();
+    const id = await event(t, 5, 2, 4);
+    const a = await cityReady(t, "A");
+    const b = await cityReady(t, "B");
+    const crew = (await t.req("POST", "/crews", { token: a.token, json: { name: "Duo" } })).body.crew;
+    const inv = (await t.req("POST", `/crews/${crew.id}/invites`, { token: a.token })).body;
+    await t.req("POST", "/invites/redeem", { token: b.token, json: { token: inv.token } });
+    await t.req("POST", `/city/events/${id}/signup`, { token: a.token, json: { inviteFriendIds: [b.id] } });
+    await t.req("POST", "/blocks", { token: a.token, json: { userId: b.id } });
+    expect(
+      (await t.req("POST", `/city/events/${id}/signup`, { token: b.token, json: { withUserId: a.id } }))
+        .status,
+    ).toBe(404);
   });
 });

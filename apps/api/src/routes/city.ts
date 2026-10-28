@@ -271,27 +271,44 @@ city.get("/events/:id", async (c) => {
   return c.json({ event: await eventView(deps, userId, e!) });
 });
 
-/** Sign up yourself. To sit with a crewmate, pass their id: they must have signed up already. */
+/**
+ * Sign up yourself. To sit with crewmates, invite them (`inviteFriendIds`); they then sign up with
+ * `withUserId` = you. Nobody joins a group without being invited, and never across a block
+ * (code review M1 #2).
+ */
 city.post("/events/:id/signup", async (c) => {
   const deps = c.get("deps");
   const userId = c.get("userId");
   const id = param(c, "id");
-  const p = await body(c, z.object({ withUserId: z.string().uuid().optional() }));
+  const p = await body(
+    c,
+    z.object({
+      withUserId: z.string().uuid().optional(),
+      inviteFriendIds: z
+        .array(z.string().uuid())
+        .max(CITY_RULES.maxBlockSize - 1)
+        .optional(),
+    }),
+  );
   const g = await gate(deps, userId);
   if (!g.result.ok) fail(403, g.result.error, "Finish the City Nights checklist first.");
   let blockId = deps.random.uuid();
   if (p.withUserId) {
     const friend = await asService(deps.db, async (tx) => {
-      const r = await tx.query<{ block_id: string; size: number; crewmates: boolean }>(
+      const r = await tx.query<{ block_id: string; size: number; invited: boolean; blocked: boolean }>(
         `select s.block_id,
                 (select count(*)::int from city_signups x where x.event_id = s.event_id and x.block_id = s.block_id) as size,
-                exists (select 1 from crew_members a join crew_members b on a.crew_id = b.crew_id where a.user_id = $2 and b.user_id = $3) as crewmates
+                exists (select 1 from city_block_invites i where i.event_id = s.event_id and i.block_id = s.block_id and i.invitee_id = $2) as invited,
+                exists (select 1 from blocks b join city_signups m on m.event_id = s.event_id and m.block_id = s.block_id
+                        where (b.blocker_id = $2 and b.blocked_id = m.user_id) or (b.blocker_id = m.user_id and b.blocked_id = $2)) as blocked
          from city_signups s where s.event_id = $1 and s.user_id = $3`,
         [id, userId, p.withUserId],
       );
       return r.rows[0];
     });
-    if (!friend || !friend.crewmates) fail(404, "not_found", "Your friend needs to sign up first.");
+    // Same generic answer for "not signed up", "didn't invite you" and "blocked" (no oracle).
+    if (!friend || !friend.invited || friend.blocked)
+      fail(404, "not_found", "Ask your friend to invite you when they sign up.");
     if (friend!.size >= CITY_RULES.maxBlockSize)
       fail(409, "full", `Groups are up to ${CITY_RULES.maxBlockSize}.`);
     blockId = friend!.block_id;
@@ -302,6 +319,32 @@ city.post("/events/:id/signup", async (c) => {
       [id, userId, blockId, deps.clock.now()],
     ),
   );
+  if (p.inviteFriendIds?.length) {
+    await asService(deps.db, async (tx) => {
+      const mine = (
+        await tx.query<{ block_id: string }>(
+          `select block_id from city_signups where event_id = $1 and user_id = $2`,
+          [id, userId],
+        )
+      ).rows[0]!.block_id;
+      for (const f of p.inviteFriendIds!) {
+        const ok =
+          (
+            await tx.query(
+              `select 1 from crew_members a join crew_members b on a.crew_id = b.crew_id
+             where a.user_id = $1 and b.user_id = $2
+               and not exists (select 1 from blocks where (blocker_id = $1 and blocked_id = $2) or (blocker_id = $2 and blocked_id = $1))`,
+              [userId, f],
+            )
+          ).rows.length > 0;
+        if (ok)
+          await tx.query(
+            `insert into city_block_invites (event_id, block_id, inviter_id, invitee_id) values ($1, $2, $3, $4) on conflict do nothing`,
+            [id, mine, userId, f],
+          );
+      }
+    });
+  }
   const e = await asUser(
     deps.db,
     userId,

@@ -37,8 +37,15 @@ export function formTables(
   blocked: Set<string>,
   metBefore: Set<string> = new Set(),
 ): FormedTables {
-  const valid = blocks.filter((b) => b.members.length > 0 && b.members.length <= opts.max);
-  const tooBig = blocks.filter((b) => b.members.length > opts.max).map((b) => b.blockId);
+  // A block that contains a blocked pair is split into solos (code review M1 #2): nobody sits next
+  // to someone they've blocked, even if a group signup tried to bundle them.
+  const safe = blocks.flatMap((b) =>
+    b.members.some((p, i) => b.members.some((q, j) => j > i && blocked.has(pairKey(p.userId, q.userId))))
+      ? b.members.map((m) => ({ blockId: `${b.blockId}:${m.userId}`, members: [m] }))
+      : [b],
+  );
+  const valid = safe.filter((b) => b.members.length > 0 && b.members.length <= opts.max);
+  const tooBig = safe.filter((b) => b.members.length > opts.max).map((b) => b.blockId);
   const total = valid.reduce((n, b) => n + b.members.length, 0);
   if (total < opts.min) return { tables: [], waitlist: [...valid.map((b) => b.blockId), ...tooBig] };
 

@@ -142,4 +142,21 @@ describe("city RLS", () => {
     await q(noah, `update keep_in_touch set yes = false where from_user_id = $1`, [noah]);
     expect((await q(ava, `select user_id from my_connections()`)).rows).toEqual([]);
   });
+  it("city_block_invites are invisible to clients (service-role only)", async () => {
+    await service(
+      db,
+      `insert into city_block_invites (event_id, block_id, inviter_id, invitee_id) values ($1, gen_random_uuid(), $2, $3)`,
+      [event, ava, noah],
+    );
+    expect(await code(q(noah, `select * from city_block_invites`))).toBe("forbidden");
+    expect(
+      await code(
+        q(
+          ava,
+          `insert into city_block_invites (event_id, block_id, inviter_id, invitee_id) values ($1, gen_random_uuid(), $2, $3)`,
+          [event, ava, lena],
+        ),
+      ),
+    ).toBe("forbidden");
+  });
 });
