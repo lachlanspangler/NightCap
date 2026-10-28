@@ -656,8 +656,8 @@
       "confidence": 3,
       "effort": 3,
       "critical": false,
-      "status": "backlog",
-      "reason": "Basic balance check first."
+      "status": "built",
+      "reason": "Built as a hard rule: nobody who came alone is the only non-man at a table (privacy review)."
     },
     {
       "id": "I-048",
@@ -1162,6 +1162,76 @@
       "critical": false,
       "status": "rejected",
       "reason": "Mornings + hangovers: no surprise audio (DRUNK_UX: haptics, not sound)."
+    },
+    {
+      "id": "I-084",
+      "kind": "polish",
+      "pillar": "night",
+      "name": "Develop frames in place",
+      "pitch": "On release, each contact-sheet frame develops where it sits instead of re-laying out into the grid.",
+      "closest": "",
+      "impact": 3,
+      "confidence": 4,
+      "effort": 2,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
+    },
+    {
+      "id": "I-085",
+      "kind": "safety",
+      "pillar": "privacy",
+      "name": "Host approval for code joins",
+      "pitch": "Optional: people joining by code wait for the host's one-tap OK.",
+      "closest": "",
+      "impact": 4,
+      "confidence": 3,
+      "effort": 2,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
+    },
+    {
+      "id": "I-086",
+      "kind": "safety",
+      "pillar": "privacy",
+      "name": "Hide anything I'm tagged in tonight",
+      "pitch": "A subject's standing veto for one night.",
+      "closest": "",
+      "impact": 3,
+      "confidence": 3,
+      "effort": 2,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
+    },
+    {
+      "id": "I-087",
+      "kind": "safety",
+      "pillar": "privacy",
+      "name": "Moderator console",
+      "pitch": "Real queue with SLAs, under-18 escalation (NCMEC), NCII hash sharing (StopNCII).",
+      "closest": "",
+      "impact": 5,
+      "confidence": 4,
+      "effort": 4,
+      "critical": false,
+      "status": "backlog",
+      "reason": "Production gap from the privacy review; /dev/reports is the prototype stand-in."
+    },
+    {
+      "id": "I-088",
+      "kind": "polish",
+      "pillar": "platform",
+      "name": "Demo shots spread across the night",
+      "pitch": "Dev 'friends snap' backdates shots across hours so hour dividers show the arc.",
+      "closest": "",
+      "impact": 2,
+      "confidence": 5,
+      "effort": 1,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
     }
   ]
 }

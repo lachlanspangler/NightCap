@@ -3,18 +3,23 @@
 > Generated from `docs/ideas_ledger.json` by `make ideas`. Edit the JSON (or use `node scripts/ideas.mjs`), not this file.
 > Score = impact × confidence ÷ effort (each 1–5), +2 when it's on the demo's critical path (★).
 
-**83 ideas**: backlog 21 · planned 0 · building 0 · built 48 · parked 2 · merged 0 · rejected 12
+**88 ideas**: backlog 25 · planned 0 · building 0 · built 49 · parked 2 · merged 0 · rejected 12
 
-Pillars: `night` 22 · `sharing` 10 · `old_friends` 11 · `city` 10 · `drunk_ux` 7 · `privacy` 10 · `platform` 10 · `growth` 3
+Pillars: `night` 23 · `sharing` 10 · `old_friends` 11 · `city` 10 · `drunk_ux` 7 · `privacy` 13 · `platform` 11 · `growth` 3
 
 | id | status | pillar | name | pitch | closest | I/C/E | score | reason |
 |---|---|---|---|---|---|---|---|---|
+| I-088 | backlog | platform | Demo shots spread across the night | Dev 'friends snap' backdates shots across hours so hour dividers show the arc. |  | 2/5/1 | 10 |  |
 | I-053 | backlog | drunk_ux | Ride home button | Big "get home" button opens Uber/Lyft at night end. |  | 3/3/1 | 9 | Nice safety touch. |
 | I-072 | backlog | old_friends | Interview old-friend crews | 5 interviews with post-college groups. |  | 4/3/2 | 6 | Needs the user. |
+| I-084 | backlog | night | Develop frames in place | On release, each contact-sheet frame develops where it sits instead of re-laying out into the grid. |  | 3/4/2 | 6 |  |
+| I-085 | backlog | privacy | Host approval for code joins | Optional: people joining by code wait for the host's one-tap OK. |  | 4/3/2 | 6 |  |
 | I-069 | backlog | platform | Push notifications | Expo push for night started / album ready. |  | 4/4/3 | 5.3 | Needs EAS project + device; inbox in prototype. |
 | I-071 | backlog | platform | Validate with 5 friend groups | Run the prototype with real groups for 2 weekends. |  | 5/3/3 | 5 | Needs the user. |
+| I-087 | backlog | privacy | Moderator console | Real queue with SLAs, under-18 escalation (NCMEC), NCII hash sharing (StopNCII). |  | 5/4/4 | 5 | Production gap from the privacy review; /dev/reports is the prototype stand-in. |
 | I-013 | backlog | night | Highlights cover | Album cover auto-picks the most-reacted shot. | Google Memories | 3/3/2 | 4.5 |  |
 | I-025 | backlog | sharing | Suggest crew from guests | After a night, "Add Sam to Night Owls?" for guests who came twice. |  | 3/3/2 | 4.5 |  |
+| I-086 | backlog | privacy | Hide anything I'm tagged in tonight | A subject's standing veto for one night. |  | 3/3/2 | 4.5 |  |
 | I-011 | backlog | night | Photo dump builder | Pick up to 10 from the album, reorder, share to Instagram. | IG photo dumps | 4/3/3 | 4 | Feeds IG instead of competing. |
 | I-034 | backlog | old_friends | Parallel nights | Two members out in different cities on the same night → side-by-side recap. |  | 4/3/3 | 4 |  |
 | I-080 | backlog | platform | Dev build with real icon | expo run:ios dev client so the bundle id, icon and splash are ours, not Expo Go's. |  | 3/4/3 | 4 | Heavy xcodebuild on a shared laptop; do it when quiet (ADR 0007). |
@@ -23,7 +28,6 @@ Pillars: `night` 22 · `sharing` 10 · `old_friends` 11 · `city` 10 · `drunk_u
 | I-016 | backlog | night | Dual-camera shot | Front + back together, BeReal-style. | BeReal | 3/3/3 | 3 | Fun, but slows capture in a dark bar. |
 | I-017 | backlog | night | Get-one-of nudge | Prompt: "No shots of Jules yet. Get one?" |  | 3/2/2 | 3 | Could feel pushy; test later. |
 | I-035 | backlog | old_friends | Home-screen widget | Latest album/moment on the home screen. | Locket | 4/3/4 | 3 | Needs a dev build (widgets not in Expo Go). |
-| I-047 | backlog | city | Gender-balance preference | Opt-in preference for tables with women/non-binary people. |  | 3/3/3 | 3 | Basic balance check first. |
 | I-082 | backlog | night | Live Activity for a live night | Lock-screen Live Activity: shots left, who's in, one tap to the shutter. |  | 4/3/4 | 3 |  |
 | I-070 | backlog | platform | Realtime shot counts | Supabase Realtime instead of 10s polling. |  | 2/4/3 | 2.7 |  |
 | I-073 | backlog | growth | Partiful import | Paste a Partiful link to pre-make the night with guests. | Partiful | 3/2/3 | 2 |  |
@@ -78,6 +82,7 @@ Pillars: `night` 22 · `sharing` 10 · `old_friends` 11 · `city` 10 · `drunk_u
 | I-039 | built | city | Crew-to-crew tables | Sign up as a crew of 2–3; seated together. |  | 4/3/2 | 6 | Safest + least awkward format. |
 | I-038 | built | city | City Nights ★ | Opt-in curated nights at public venues; tables of 4–8. | Timeleft | 5/3/4 | 5.8 | Pillar 4. |
 | I-032 | built | old_friends | Gentle nudges | Privately nudge others about the quietest member; ≤1/week; never shaming. |  | 3/3/2 | 4.5 | OLD_FRIENDS rules. |
+| I-047 | built | city | Gender-balance preference | Opt-in preference for tables with women/non-binary people. |  | 3/3/3 | 3 | Built as a hard rule: nobody who came alone is the only non-man at a table (privacy review). |
 | I-075 | parked | growth | Paid premium rolls | Pay for 36-exposure rolls / themes. | Dispo | 2/2/2 | 2 | Monetisation is out of scope. |
 | I-074 | parked | growth | Venue partner nights | Bars host City Nights; drink specials. | Timeleft | 3/2/4 | 1.5 | Business dev; post-prototype. |
 | I-027 | rejected | sharing | Contact book invites | Upload contacts to find friends. | Lapse | 3/3/2 | 4.5 | Privacy cost + Lapse's spam lesson; links instead. |

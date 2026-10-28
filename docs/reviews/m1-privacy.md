@@ -122,15 +122,15 @@ Sign-off: no — fix C1, C2, H1, H2, H3, H4 first.
 
 Baseline: `npx vitest run` → 284 tests green. Re-probed with a scratch test (`apps/api/test/zz-probe-privacy2.test.ts`, deleted). Mobile tests were not run (vitest only).
 
-**Verified fixed:** C2 (under_18/under_21 split, evidence hold survives author delete *and* author account deletion with `media_key_snapshot`, hash denylist, `/dev/reports`), H2 (guests can't mint links or see the code, cap 10, `joined_your_night`, rotate revokes, NULL-safe `nc_is_host`), H3 (reported author deletes fine, report survives), M2, M4, M5, L1 (server-clock 21+), L2 (PNG allowlist), `remove_member` no longer deferred and drops undeveloped-night membership, lone-woman hard rule (solo women only).
+**Verified fixed:** C2 (under_18/under_21 split, evidence hold survives author delete _and_ author account deletion with `media_key_snapshot`, hash denylist, `/dev/reports`), H2 (guests can't mint links or see the code, cap 10, `joined_your_night`, rotate revokes, NULL-safe `nc_is_host`), H3 (reported author deletes fine, report survives), M2, M4, M5, L1 (server-clock 21+), L2 (PNG allowlist), `remove_member` no longer deferred and drops undeveloped-night membership, lone-woman hard rule (solo women only).
 
 ### Still wrong / new
 
-**R2-1 (high, CONFIRMED): H4's preview lets a tag leak a photo *during the live night*, and any subject can pass it on.** `0011_safety.sql:100` admits a tagged subject whenever `unlocked_at is null` (not only in the morning review), and `shot_tags_insert` lets anyone who can see the shot tag others. Probe: Maya shoots at 21:00, tags Theo → Theo sees it; Theo tags Jules → Jules sees it and `GET /media` = 200, all mid-night. That breaks rule 1 and lets a non-author widen an unreviewed shot. **Fix:** preview only after `ended_at` (the review phase), only for tags whose `tagger_id = author_id`; non-authors can't tag before the unlock. Copy "only you (and anyone you tag)" then holds.
+**R2-1 (high, CONFIRMED): H4's preview lets a tag leak a photo _during the live night_, and any subject can pass it on.** `0011_safety.sql:100` admits a tagged subject whenever `unlocked_at is null` (not only in the morning review), and `shot_tags_insert` lets anyone who can see the shot tag others. Probe: Maya shoots at 21:00, tags Theo → Theo sees it; Theo tags Jules → Jules sees it and `GET /media` = 200, all mid-night. That breaks rule 1 and lets a non-author widen an unreviewed shot. **Fix:** preview only after `ended_at` (the review phase), only for tags whose `tagger_id = author_id`; non-authors can't tag before the unlock. Copy "only you (and anyone you tag)" then holds.
 
 **R2-2 (high, CONFIRMED): "Remove from night" isn't a ban.** `remove_from_night` (`0011:167-179`) only deletes the row. Probe: removed Creep re-entered at once via `POST /nights/:id/join` (200) and via the code (200, crew members still get it). **Fix:** record `night_bans (night_id, user_id)`; `nc_join` refuses them (generic `unavailable`); rotate the code on remove; optionally offer "also block".
 
-**R2-3 (medium, CONFIRMED): the H1 fix hides the crew's night from the *blocker* too.** `can_see_night` uses `blocked_either` (`0011:125`), so once Ex joins Theo's night, Maya (who blocked Ex) gets `liveNight: null`, `GET /nights/:id` 404, and `409 crew_has_live_night` if she tries to start her own. She can join only by guessing the id (200). Net effect: the blocked person still locks the blocker out of the UI, and the 409 is an oracle. **Fix:** hide only from the *blocked* side (`b.blocker_id = m.user_id and b.blocked_id = auth.uid()`), matching `nc_join`.
+**R2-3 (medium, CONFIRMED): the H1 fix hides the crew's night from the _blocker_ too.** `can_see_night` uses `blocked_either` (`0011:125`), so once Ex joins Theo's night, Maya (who blocked Ex) gets `liveNight: null`, `GET /nights/:id` 404, and `409 crew_has_live_night` if she tries to start her own. She can join only by guessing the id (200). Net effect: the blocked person still locks the blocker out of the UI, and the 409 is an oracle. **Fix:** hide only from the _blocked_ side (`b.blocker_id = m.user_id and b.blocked_id = auth.uid()`), matching `nc_join`.
 
 **R2-4 (medium, CONFIRMED): M1 is half-wired.** `computeNudges` takes `blockedPairs`, but `runNudges` never passes it (`services/moments.ts`, grep: no caller). Blocked pairs are still nudged about each other. Muted subjects are fixed. **Fix:** load blocks among crew members and pass the pair set; add an API-level test.
 
@@ -145,6 +145,7 @@ Sign-off: no — fix R2-1, R2-2 (and R2-3) first; R2-4/R2-5 next loop.
 Baseline: `npx vitest run` → 288 tests green. Re-probed with a scratch test (`apps/api/test/zz-probe-privacy3.test.ts`, deleted).
 
 **Verified fixed:**
+
 - R2-1: a mid-night tag reveals nothing (subject sees 0 shots); after the night ends the author-tagged subject previews and can hide; a subject's own tag before the unlock is refused (403) and the third person sees 0.
 - R2-2: a removed member is banned: crew rejoin, old code and new code all 404, the night 404s and drops off their crew card; the code rotated; a guest can't remove the host (403).
 - R2-3: the blocker keeps the crew night and can join after the blocked person did; mutual invisibility holds inside it. The blocked side can't see or join the blocker's night.
@@ -153,6 +154,7 @@ Baseline: `npx vitest run` → 288 tests green. Re-probed with a scratch test (`
 - R2-6: solo non-binary people covered by the lone rule.
 
 **Residual (low, acceptable for the prototype):**
+
 - The blocked side still gets `409 crew_has_live_night` if they try to start a night while the blocker's is live: it tells them a night exists, not where or whose. Fix later with a generic "can't start right now".
 - A preview shot the author then tosses has already been seen (and could be saved) by the tagged subject. That's the author's own choice to tag; say so in the review copy ("people you tag see it now").
 - Production gaps stay on STATUS: real ID verification, NCMEC/StopNCII and a moderator tool, evidence access control and retention, perceptual hashing, block evasion via new accounts, the under-21 retry flag, PostgREST exposure off.

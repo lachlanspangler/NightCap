@@ -103,7 +103,8 @@ what it felt like.
   strip + `exif: false`), the review found nothing.
 
 ## 2026-10-28 — Milestone 1 reviews: privacy & safety reviewer (round 1: no sign-off)
-- **It was right:** the prototype had consent *mechanics* but the safety tools weren't where the
+
+- **It was right:** the prototype had consent _mechanics_ but the safety tools weren't where the
   threat is. There was no Block on a person outside City tables, no host "remove from tonight",
   and removals were deferred to the morning as if they were drunk regret. Reports went nowhere
   and the evidence could be deleted. One report could trap the reported person in the app (a
@@ -124,5 +125,30 @@ what it felt like.
 - **Bug I caught while fixing:** `nc_is_host()` returned NULL for non-members, and `not NULL` lets
   a guest through. All host checks are coalesced now, with a DB test proving a guest can't remove,
   rotate or mint links.
-- **Decision:** "remove a member" moved from *deferred* to *safety* in DRUNK_UX. The original
+- **Decision:** "remove a member" moved from _deferred_ to _safety_ in DRUNK_UX. The original
   research treated it as regret; the review showed it's usually the opposite at 1am.
+
+## 2026-10-28 — Privacy sign-off, every flow on the simulator, wrap-up
+
+- **Privacy round 2** found two more highs, both fixed in 0012 with tests:
+  - A tag made mid-night revealed the photo, and a subject could re-tag it on. Now previews happen
+    only in the morning review, only for the author's tags.
+  - "Remove" wasn't a ban. Removal now bans and rotates the code.
+- **Round 2 also fixed:**
+  - Hiding the night from the blocker → hidden only from the blocked side.
+  - Nudges never got the block list → they do now.
+  - Reports died with the reporter → they're snapshotted.
+- **Round 3: signed off.** All three reviewers have now signed off.
+- **Running every flow for real** (not just the core loop) found four things the tests couldn't:
+  - My dev DB had drifted from an _edited_ migration (0000). The mock clock override never
+    reached it, so time travel silently fell back to production clamping and early reveals never
+    happened. Migrations now record a sha256, the API refuses to start on drift, and
+    `make reset-db` exists.
+  - The photo viewer was a full-screen modal, so undo toasts rendered behind it. It's a normal
+    pushed screen now.
+  - The "On this night" seed used today's calendar date. At 5am "tonight" is yesterday.
+  - Smaller: the sign-in-as-Maya helper assumed a signed-out app; a "›" broke two regexes.
+- **Final:** `make check` green. Six Maestro flows pass on `NightCap iPhone` with 0 failures. New
+  clip (3:08) and 28 screenshots in `docs/media/`.
+- **Shared laptop:** wait-for-quiet held off several times for NightOut's xcodebuild/Maestro (its
+  sim 34742057…). I never touched its device, its Metro (8095) or its files.
