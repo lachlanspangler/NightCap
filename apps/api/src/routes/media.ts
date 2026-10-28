@@ -45,7 +45,8 @@ media.get("/:shotId", async (c) => {
   return new Response(bytes, {
     headers: {
       "content-type": row!.mime,
-      "cache-control": "private, max-age=600",
+      // no-store: a hide must take effect on devices that already loaded it (code review #16).
+      "cache-control": "private, no-store",
       "x-content-type-options": "nosniff",
       "content-disposition": "inline",
     },

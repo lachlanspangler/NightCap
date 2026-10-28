@@ -232,6 +232,7 @@ export default function CrewScreen() {
             >
               {a.phase === "unlocked" && a.coverUrl ? (
                 <Image
+                  cachePolicy="memory"
                   source={{ uri: mediaUrl(a.coverUrl)!, cacheKey: `cover-${a.id}` }}
                   style={{ width: "100%", aspectRatio: 0.78, borderRadius: 16 }}
                   contentFit="cover"

@@ -105,6 +105,7 @@ export default function Photo() {
         style={{ position: "absolute", left: 0, right: 0, top: 0, height: 320 }}
       />
       <Image
+        cachePolicy="memory"
         source={{ uri: mediaUrl(shot.url)!, cacheKey: `shot-${shot.id}` }}
         style={StyleSheet.absoluteFill}
         contentFit="contain"

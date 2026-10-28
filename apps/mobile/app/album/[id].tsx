@@ -336,6 +336,7 @@ function DevelopTile({
         ]}
       >
         <Image
+          cachePolicy="memory"
           source={{ uri: mediaUrl(shot.url)!, cacheKey: `shot-${shot.id}` }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"

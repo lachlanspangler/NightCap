@@ -171,6 +171,7 @@ export default function Moment() {
                   <View key={p.id} style={{ width: size }}>
                     {s ? (
                       <Image
+                        cachePolicy="memory"
                         source={{ uri: mediaUrl(s.url)!, cacheKey: `shot-${s.id}` }}
                         style={{ width: size, height: size * 1.33, borderRadius: 16 }}
                         contentFit="cover"

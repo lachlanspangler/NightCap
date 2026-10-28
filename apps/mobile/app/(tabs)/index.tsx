@@ -253,6 +253,7 @@ function AlbumHero({ album, crewName }: { album: AlbumSummary; crewName: string 
     >
       {album.coverUrl && (
         <Image
+          cachePolicy="memory"
           source={{ uri: mediaUrl(album.coverUrl)!, cacheKey: `cover-${album.id}` }}
           style={{ height: 180 }}
           contentFit="cover"
