@@ -12,7 +12,7 @@
       "confidence": 5,
       "effort": 3,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Core loop (THE_NIGHT)."
     },
     {
@@ -26,7 +26,7 @@
       "confidence": 5,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Core loop; the wedge."
     },
     {
@@ -40,7 +40,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Consent + drunk regret (PRIVACY_SAFETY)."
     },
     {
@@ -54,7 +54,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Sober check; makes the morning social."
     },
     {
@@ -68,7 +68,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Scarcity = better photos, no 400-burst rolls."
     },
     {
@@ -82,7 +82,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "The emotional peak."
     },
     {
@@ -96,7 +96,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Anticipation without leaks."
     },
     {
@@ -110,7 +110,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Clear boundary for unlock + review."
     },
     {
@@ -124,7 +124,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Fixes \"who has the photos\"."
     },
     {
@@ -138,7 +138,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Kills \"send me those\"."
     },
     {
@@ -166,7 +166,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Lightweight social glue after the reveal."
     },
     {
@@ -194,8 +194,8 @@
       "confidence": 4,
       "effort": 1,
       "critical": false,
-      "status": "planned",
-      "reason": "Context without location leaks."
+      "status": "built",
+      "reason": "API + DB support titles/venues; the start-night UI skips them (speed first)."
     },
     {
       "id": "I-015",
@@ -250,7 +250,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Effortless join (THE_NIGHT +1 problem)."
     },
     {
@@ -264,7 +264,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -278,7 +278,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -292,7 +292,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -306,7 +306,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Honest growth loop."
     },
     {
@@ -320,7 +320,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Album forms itself."
     },
     {
@@ -334,7 +334,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "+1s happen every night."
     },
     {
@@ -390,7 +390,7 @@
       "confidence": 4,
       "effort": 3,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Pillar 3."
     },
     {
@@ -404,7 +404,7 @@
       "confidence": 4,
       "effort": 3,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Reciprocity at a gentle cadence."
     },
     {
@@ -418,7 +418,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Nostalgia retention loop."
     },
     {
@@ -432,7 +432,7 @@
       "confidence": 3,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -446,7 +446,7 @@
       "confidence": 3,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "OLD_FRIENDS rules."
     },
     {
@@ -460,7 +460,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Shared future anchor."
     },
     {
@@ -530,7 +530,7 @@
       "confidence": 3,
       "effort": 4,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Pillar 4."
     },
     {
@@ -544,7 +544,7 @@
       "confidence": 3,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Safest + least awkward format."
     },
     {
@@ -558,7 +558,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "No chasing."
     },
     {
@@ -572,7 +572,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": "Safety tool."
     },
     {
@@ -586,7 +586,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -600,7 +600,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -670,7 +670,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "DRUNK_UX."
     },
     {
@@ -684,7 +684,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -698,7 +698,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Nothing permanent by accident."
     },
     {
@@ -712,7 +712,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -754,7 +754,7 @@
       "confidence": 5,
       "effort": 1,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -768,7 +768,7 @@
       "confidence": 5,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Consent core (PRIVACY_SAFETY)."
     },
     {
@@ -782,7 +782,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -796,7 +796,7 @@
       "confidence": 5,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "No location leaks."
     },
     {
@@ -810,7 +810,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -824,7 +824,7 @@
       "confidence": 4,
       "effort": 1,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -838,7 +838,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": false,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -852,7 +852,7 @@
       "confidence": 5,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -908,7 +908,7 @@
       "confidence": 5,
       "effort": 3,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "Demo always looks alive."
     },
     {
@@ -922,7 +922,7 @@
       "confidence": 4,
       "effort": 3,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "ADR 0002."
     },
     {
@@ -936,7 +936,7 @@
       "confidence": 4,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": "No stock-photo licensing."
     },
     {
@@ -950,7 +950,7 @@
       "confidence": 5,
       "effort": 2,
       "critical": true,
-      "status": "planned",
+      "status": "built",
       "reason": ""
     },
     {
@@ -1092,6 +1092,76 @@
       "critical": false,
       "status": "rejected",
       "reason": "Slows capture; one consistent develop look instead."
+    },
+    {
+      "id": "I-079",
+      "kind": "polish",
+      "pillar": "platform",
+      "name": "Clean demo chrome",
+      "pitch": "nightcap://devtools?chrome=0 hides the DEV tab for store-quality screenshots.",
+      "closest": "",
+      "impact": 2,
+      "confidence": 5,
+      "effort": 1,
+      "critical": false,
+      "status": "built",
+      "reason": "Built with the dev panel."
+    },
+    {
+      "id": "I-080",
+      "kind": "infra",
+      "pillar": "platform",
+      "name": "Dev build with real icon",
+      "pitch": "expo run:ios dev client so the bundle id, icon and splash are ours, not Expo Go's.",
+      "closest": "",
+      "impact": 3,
+      "confidence": 4,
+      "effort": 3,
+      "critical": false,
+      "status": "backlog",
+      "reason": "Heavy xcodebuild on a shared laptop; do it when quiet (ADR 0007)."
+    },
+    {
+      "id": "I-081",
+      "kind": "infra",
+      "pillar": "platform",
+      "name": "Thumbnail variants",
+      "pitch": "Serve 400px WebP thumbs for grids; originals only in the viewer.",
+      "closest": "",
+      "impact": 3,
+      "confidence": 4,
+      "effort": 3,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
+    },
+    {
+      "id": "I-082",
+      "kind": "feature",
+      "pillar": "night",
+      "name": "Live Activity for a live night",
+      "pitch": "Lock-screen Live Activity: shots left, who's in, one tap to the shutter.",
+      "closest": "",
+      "impact": 4,
+      "confidence": 3,
+      "effort": 4,
+      "critical": false,
+      "status": "backlog",
+      "reason": ""
+    },
+    {
+      "id": "I-083",
+      "kind": "polish",
+      "pillar": "night",
+      "name": "Reveal sound",
+      "pitch": "A soft shutter-roll sound as the album develops.",
+      "closest": "",
+      "impact": 2,
+      "confidence": 2,
+      "effort": 1,
+      "critical": false,
+      "status": "rejected",
+      "reason": "Mornings + hangovers: no surprise audio (DRUNK_UX: haptics, not sound)."
     }
   ]
 }

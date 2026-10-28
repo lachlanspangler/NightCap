@@ -22,3 +22,40 @@ what it felt like.
     a dev build is optional later. ADR 0007.
   - "Timeshare" from the brief: I couldn't verify an app by that name (web search only returns
     vacation timeshares). Covered the category instead, flagged in STATUS → "Needs from you".
+
+## 2026-10-28 — Phase 1 done, backend built, vertical slice verified on our simulator
+
+- **Phase 1:** 7 research docs, 78 ideas (15 rejected with reasons), ADRs 0001–0008.
+- **Core** (`packages/core`, 130 tests): DST-safe local-time math (two-pass offset correction,
+  no tz lib), night lifecycle (auto-end 05:00 or 12h, unlock 10:00 ≥ 6h after start, early reveal
+  only from 07:00: the sober check), visibility predicate shared with SQL via one fixture,
+  consent, permissions, invites/codes, 21+ gate, drunk-UX rules, weekly moments, recaps, nudges,
+  City Night table forming. ESLint bans Date.now/new Date()/Math.random in core (verified).
+- **DB** (`packages/db`, 62 tests): PGlite + a Supabase shim (ADR 0002). Every request runs
+  as `authenticated` with JWT claims, so RLS is the gate. Bugs the tests found: rate-limit
+  attempts rolled back with the error; INSERT…RETURNING blocked by a STABLE visibility function;
+  removed tags invisible to their subject; recursive policy on city_table_members.
+- **API** (`apps/api`, 38 tests): Hono, EXIF/XMP/IPTC stripping (pure byte parser), signed media
+  URLs re-checked under RLS on every fetch (a hide kills an issued URL immediately), deferral of
+  irreversible actions at night, City Nights, moments/recaps/nudges, dev routes only in mock mode.
+  A seeded fuzz found greedy table seating could strand someone → rebalancing.
+- **Mobile** (Expo SDK 54, 37 jest tests): 20+ screens. Verified for real on `NightCap iPhone`
+  (our UDID) in Expo Go, driven by Maestro: `.maestro/core-loop.yaml` passes end to end (61 steps),
+  screenshots `docs/media/core-*.png`, clip `docs/media/core-loop.mp4` (2:35).
+- **What running it taught me** (none of this showed up in unit tests):
+  - The DEV pill sat on the camera's CODE chip → moved to a left-edge tab.
+  - Dev time travel backwards drained the API rate-limit bucket for hours → clamped, tested.
+  - Countdowns didn't re-sync after time travel → clock subscription.
+  - The reveal headline flipped back to the title on re-render → captured once.
+  - Secondary buttons wrapped to two lines → tighter padding.
+  - Expo Go's tarball is the .app's _contents_, and `simctl install` of a plain folder hangs.
+- **Feel:** the night palette + generated bokeh viewfinder really reads as "out at a bar". The
+  amber shutter is unmissable. The 3am "Get some sleep." card and the morning "I'm up. I'm good."
+  are the most charming moments. The dawn gradient on reveal is the payoff. Weak spots: the
+  develop animation is over before a screenshot can catch it (fine on video); the tiny film
+  frames in the roll card are a bit busy.
+- **Shared laptop:** wait-for-quiet held off ~25 min total while NightOut ran xcodebuild tests
+  (load peaked at 156). Never touched its sim (34742057…) or its Metro (8095).
+- **Decisions:** the Maestro flows use Expo Go (`host.exp.Exponent`) and `stopApp` before each run,
+  because a running Expo Go keeps the old bundle. CI-mode Metro (no reload) is restarted after
+  code changes; that keeps it predictable and light.
