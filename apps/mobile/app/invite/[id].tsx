@@ -8,6 +8,8 @@ import { QR } from "../../src/components/QR";
 import { BigButton, ErrorNote, Gap, Loading, Screen, Txt } from "../../src/components/ui";
 import { haptic } from "../../src/haptics";
 import { night } from "../../src/theme";
+import type { Night } from "../../src/types";
+import { useApi } from "../../src/useApi";
 import { useMe } from "../../src/useMe";
 
 interface Invite {
@@ -18,6 +20,7 @@ interface Invite {
 export default function InviteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { scale } = useMe();
+  const thisNight = useApi<{ night: Night }>(`/nights/${id}`).data?.night;
   const [inv, setInv] = useState<Invite | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -77,6 +80,28 @@ export default function InviteScreen() {
               await Clipboard.setStringAsync(inv.links.web);
               haptic.success();
               setCopied(true);
+            }}
+          />
+        </>
+      )}
+      {thisNight?.me.isHost && (
+        <>
+          <Gap h={10} />
+          <BigButton
+            testID="invite-rotate"
+            label="New code (turns off old links)"
+            kind="quiet"
+            primary={false}
+            scale={scale}
+            onPress={async () => {
+              try {
+                const r = await api<{ night: Night }>("POST", `/nights/${id}/code/rotate`);
+                const fresh = await api<Invite>("POST", `/nights/${id}/invites`);
+                setInv({ ...fresh, code: r.night.code });
+                haptic.success();
+              } catch (e) {
+                setError((e as Error).message);
+              }
             }}
           />
         </>

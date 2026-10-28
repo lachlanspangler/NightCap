@@ -4,13 +4,14 @@
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, mediaUrl } from "../../src/api";
 import { useUndo } from "../../src/components/Undo";
-import { BigButton, ErrorNote, Gap, IconButton, Loading, Txt } from "../../src/components/ui";
+import { Avatar, BigButton, ErrorNote, Gap, IconButton, Loading, Txt } from "../../src/components/ui";
 import { haptic } from "../../src/haptics";
-import { night as N } from "../../src/theme";
+import { useSession } from "../../src/session";
+import { fonts, night as N } from "../../src/theme";
 import type { Night } from "../../src/types";
 import { useApi } from "../../src/useApi";
 import { useMe } from "../../src/useMe";
@@ -23,6 +24,8 @@ export default function Review() {
   const [i, setI] = useState(0);
   const [tossed, setTossed] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [tagged, setTagged] = useState<Set<string>>(new Set());
+  const session = useSession();
   const n = q.data?.night;
   if (!n) {
     return (
@@ -93,7 +96,9 @@ export default function Review() {
             Your shots from last night
           </Txt>
           <Txt v="small" tone="textDim">
-            {shot ? `${i + 1} of ${mine.length} · only you can see these` : `All ${mine.length} looked at`}
+            {shot
+              ? `${i + 1} of ${mine.length} · only you (and anyone you tag) see these`
+              : `All ${mine.length} looked at`}
           </Txt>
         </View>
       </View>
@@ -131,6 +136,52 @@ export default function Review() {
                 <Txt v="small">TOSSED EARLIER</Txt>
               </View>
             )}
+          </View>
+          <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <Txt v="small" tone="textDim">
+              WHO&apos;S IN IT? THEY GET A PRIVATE LOOK FIRST AND CAN VETO IT.
+            </Txt>
+            <Gap h={6} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              {n.participants
+                .filter((p) => p.id !== session.userId)
+                .map((p) => {
+                  const on = shot.tags.some((t) => t.userId === p.id) || tagged.has(`${shot.id}:${p.id}`);
+                  return (
+                    <Pressable
+                      key={p.id}
+                      testID={`review-tag-${p.name.toLowerCase()}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={on ? `${p.name} is tagged` : `Tag ${p.name}`}
+                      accessibilityState={{ selected: on }}
+                      disabled={on || locked}
+                      onPress={async () => {
+                        haptic.tick();
+                        setTagged((t) => new Set(t).add(`${shot.id}:${p.id}`));
+                        try {
+                          await api("POST", `/shots/${shot.id}/tags`, { userId: p.id });
+                        } catch (e) {
+                          setError((e as Error).message);
+                        }
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        minHeight: 48,
+                        paddingHorizontal: 12,
+                        borderRadius: 999,
+                        backgroundColor: on ? "rgba(255,180,77,0.22)" : N.surface2,
+                      }}
+                    >
+                      <Avatar name={p.name} hue={p.hue} size={28} />
+                      <Text style={{ fontFamily: fonts.bodySemi, color: N.text, fontSize: 15 }}>
+                        {on ? `${p.name} ✓` : p.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </ScrollView>
           </View>
           <Gap h={14} />
           {error && (

@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../src/api";
 import { serverNow } from "../../src/clock";
 import { useCountdown } from "../../src/components/Countdown";
+import { HoldButton } from "../../src/components/HoldButton";
+import { PersonSheet, type Person } from "../../src/components/PersonSheet";
 import {
   Avatar,
   BigButton,
@@ -28,6 +30,8 @@ export default function EventScreen() {
   const q = useApi<{ event: CityEvent }>(`/city/events/${eventId}`, { pollMs: 15_000 });
   const { scale } = useMe();
   const [error, setError] = useState<string | null>(null);
+  const [person, setPerson] = useState<Person | null>(null);
+  const [leftTable, setLeftTable] = useState<string | null>(null);
   const reveal = useCountdown(q.data?.event.revealAt);
   const e = q.data?.event;
   if (!e)
@@ -134,13 +138,13 @@ export default function EventScreen() {
                     />
                   </View>
                 )}
-                {!p.me && !ended && (
-                  <BigButton
-                    label="Block"
-                    kind="quiet"
-                    primary={false}
+                {!p.me && (
+                  <IconButton
+                    testID={`tablemate-${p.name.toLowerCase()}`}
+                    label={`${p.name}: block or report`}
+                    glyph="•••"
                     scale={scale}
-                    onPress={() => run(() => api("POST", "/blocks", { userId: p.id }))}
+                    onPress={() => setPerson({ id: p.id, name: p.name, hue: p.hue })}
                   />
                 )}
               </View>
@@ -199,13 +203,31 @@ export default function EventScreen() {
         />
         <Gap h={8} />
         {e.table && (
-          <BigButton
+          <HoldButton
+            testID="city-leave"
             label="Leave this table"
-            kind="danger"
-            primary={false}
+            hint="Hold. You can leave any time; your photos stay unless you remove them."
             scale={scale}
-            onPress={() => run(() => api("POST", `/city/tables/${e.table!.id}/leave`))}
+            onConfirm={() => {
+              const tableId = e.table!.id;
+              setLeftTable(tableId);
+              void run(() => api("POST", `/city/tables/${tableId}/leave`, {}));
+            }}
           />
+        )}
+        {leftTable && (
+          <>
+            <Gap h={8} />
+            <HoldButton
+              testID="city-leave-photos"
+              label="Also remove my photos from that table"
+              hint="Hold. Deletes them for everyone. No undo."
+              scale={scale}
+              onConfirm={() =>
+                run(() => api("POST", `/city/tables/${leftTable}/leave`, { removePhotos: true }))
+              }
+            />
+          </>
         )}
         <Gap h={8} />
         <Txt v="small" tone="textFaint">
@@ -213,6 +235,13 @@ export default function EventScreen() {
           the morning.
         </Txt>
       </ScrollView>
+      <PersonSheet
+        person={person}
+        eventId={e.id}
+        nightId={e.table?.nightId ?? undefined}
+        onClose={() => setPerson(null)}
+        onDone={() => void q.refresh()}
+      />
     </SafeAreaView>
   );
 }

@@ -11,6 +11,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, mediaUrl } from "../../../src/api";
 import { HoldButton } from "../../../src/components/HoldButton";
+import { PersonSheet, type Person } from "../../../src/components/PersonSheet";
 import { useUndo } from "../../../src/components/Undo";
 import { Avatar, BigButton, ErrorNote, Gap, IconButton, Loading, Txt } from "../../../src/components/ui";
 import { haptic } from "../../../src/haptics";
@@ -27,6 +28,7 @@ export default function Photo() {
   const { me, scale } = useMe();
   const withUndo = useUndo();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [person, setPerson] = useState<Person | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const n = q.data?.night;
@@ -73,7 +75,7 @@ export default function Photo() {
   const hide = () => {
     setSheet(null);
     withUndo(
-      "Hidden. Only the person who took it can still see it.",
+      "Hidden from everyone. The person who took it still has their copy.",
       async () => {
         await api("POST", `/shots/${shot.id}/hide`);
         router.back();
@@ -164,7 +166,7 @@ export default function Photo() {
             >
               <Txt v="heading">{`${n.participants.find((p) => p.id === myTag.taggerId)?.name ?? "Someone"} tagged you`}</Txt>
               <Txt v="small" tone="textDim">
-                Your call. Nobody else sees the tag until you keep it.
+                Your call. Only you and the person who tagged you can see the tag.
               </Txt>
               <Gap h={10} />
               <View style={{ flexDirection: "row", gap: 8 }}>
@@ -242,6 +244,19 @@ export default function Photo() {
                 scale={scale}
                 onPress={save}
               />
+              {!shot.mine && author && (
+                <BigButton
+                  testID="photo-block-author"
+                  label={`Block ${author.name}`}
+                  kind="danger"
+                  primary={false}
+                  scale={scale}
+                  onPress={() => {
+                    setSheet(null);
+                    setPerson({ id: author.id, name: author.name, hue: author.hue });
+                  }}
+                />
+              )}
               {!shot.mine && (
                 <BigButton
                   testID="photo-report"
@@ -353,6 +368,12 @@ export default function Photo() {
           </View>
         </View>
       </SafeAreaView>
+      <PersonSheet
+        person={person}
+        nightId={n.id}
+        onClose={() => setPerson(null)}
+        onDone={() => void q.refresh()}
+      />
     </View>
   );
 }

@@ -48,6 +48,7 @@ export const nightFixture = (over: Partial<Night> = {}): Night => ({
     isParticipant: true,
     ready: false,
     canEnd: true,
+    isHost: true,
     shotsTaken: 7,
     shotsLeft: 17,
     canMarkReady: false,

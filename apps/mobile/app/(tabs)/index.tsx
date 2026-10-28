@@ -2,14 +2,14 @@
 import { localParts } from "@nightcap/core";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { mediaUrl } from "../../src/api";
+import { api, mediaUrl } from "../../src/api";
 import { serverNow } from "../../src/clock";
 import { FilmTile } from "../../src/components/FilmTile";
 import { AvatarStack, BigButton, Card, ErrorNote, Gap, Loading, Pill, Txt } from "../../src/components/ui";
 import { night } from "../../src/theme";
-import type { AlbumSummary, Crew } from "../../src/types";
+import type { AlbumSummary, Crew, Notification } from "../../src/types";
 import { useApi } from "../../src/useApi";
 import { useMe } from "../../src/useMe";
 
@@ -27,6 +27,7 @@ function greeting(name: string, tz: string) {
 export default function Home() {
   const { me, scale } = useMe();
   const crews = useApi<{ crews: Crew[] }>("/crews", { pollMs: 15_000 });
+  const inbox = useApi<{ notifications: Notification[] }>("/me/notifications", { pollMs: 20_000 });
   if (!me || !crews.data) {
     return (
       <View style={{ flex: 1, backgroundColor: night.bg }}>
@@ -184,6 +185,11 @@ export default function Home() {
           </>
         )}
 
+        <Lately
+          items={(inbox.data?.notifications ?? []).filter((x) => !x.read).slice(0, 4)}
+          crews={all}
+          onRead={() => void api("POST", "/me/notifications/read").then(() => inbox.refresh())}
+        />
         <Gap h={6} />
         <Txt v="label" tone="textDim">
           YOUR CREWS
@@ -269,5 +275,62 @@ function AlbumHero({ album, crewName }: { album: AlbumSummary; crewName: string 
         <Txt v="label" mode="dawn" tone="textDim">{`${crewName} · ${album.people} people · tap to open`}</Txt>
       </View>
     </Card>
+  );
+}
+
+const NOTE_COPY: Record<string, (p: Record<string, unknown>, crewName: string) => string> = {
+  joined_your_night: () => "Someone joined your night with the code or a link. Check who's here.",
+  night_started: (_p, c) => `${c || "Your crew"} started a night.`,
+  album_ready: () => "An album developed.",
+  tagged: () => "Someone tagged you in a photo. Your call.",
+  nudge: (p) => String(p.text ?? "A friend could use a ping."),
+  moment_open: (p) => `Nightcap time with ${String(p.crew ?? "your crew")}.`,
+};
+
+function Lately({ items, crews, onRead }: { items: Notification[]; crews: Crew[]; onRead: () => void }) {
+  if (!items.length) return null;
+  const go = (n: Notification) => {
+    const p = n.payload;
+    if (n.kind === "joined_your_night" && p.night_id) router.push(`/night/${String(p.night_id)}`);
+    else if (n.kind === "album_ready" && p.night_id) router.push(`/album/${String(p.night_id)}`);
+    else if (n.kind === "tagged") router.push("/tags");
+    else if (p.crew_id) router.push(`/crew/${String(p.crew_id)}`);
+  };
+  return (
+    <View testID="home-lately" style={{ marginBottom: 18 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Txt v="label" tone="textDim">
+          LATELY
+        </Txt>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Mark all read"
+          onPress={onRead}
+          style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 8 }}
+        >
+          <Txt v="small" tone="accent">
+            Mark read
+          </Txt>
+        </Pressable>
+      </View>
+      {items.map((n) => {
+        const crew = crews.find((c) => c.id === n.payload.crew_id);
+        return (
+          <Pressable
+            key={n.id}
+            accessibilityRole="button"
+            onPress={() => go(n)}
+            style={{
+              minHeight: 52,
+              justifyContent: "center",
+              borderBottomWidth: 1,
+              borderBottomColor: night.line,
+            }}
+          >
+            <Txt v="label">{(NOTE_COPY[n.kind] ?? (() => n.kind))(n.payload, crew?.name ?? "")}</Txt>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }

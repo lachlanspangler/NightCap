@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api, mediaUrl } from "../../src/api";
 import { serverNow } from "../../src/clock";
 import { FilmTile } from "../../src/components/FilmTile";
+import { PersonSheet, type Person } from "../../src/components/PersonSheet";
 import {
   Avatar,
   BigButton,
@@ -31,6 +32,7 @@ export default function CrewScreen() {
   const q = useApi<{ crew: Crew }>(`/crews/${id}`, { pollMs: 10_000 });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [person, setPerson] = useState<Person | null>(null);
   const crew = q.data?.crew;
   if (!crew) {
     return (
@@ -105,12 +107,20 @@ export default function CrewScreen() {
         <Gap h={14} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14 }}>
           {crew.members.map((m) => (
-            <View key={m.id} style={{ alignItems: "center", width: 58 }}>
+            <Pressable
+              key={m.id}
+              testID={`member-${m.name.toLowerCase()}`}
+              accessibilityRole="button"
+              accessibilityLabel={m.id === me?.id ? `${m.name} (you)` : `${m.name}, options`}
+              disabled={m.id === me?.id}
+              onPress={() => setPerson({ id: m.id, name: m.name, hue: m.hue })}
+              style={{ alignItems: "center", width: 58, minHeight: 56 }}
+            >
               <Avatar name={m.name} hue={m.hue} size={50} ring={m.id === me?.id ? night.amber : undefined} />
               <Txt v="small" tone="textDim" numberOfLines={1}>
                 {m.name}
               </Txt>
-            </View>
+            </Pressable>
           ))}
         </ScrollView>
         <Gap h={22} />
@@ -263,6 +273,13 @@ export default function CrewScreen() {
           ))}
         </View>
       </ScrollView>
+      <PersonSheet
+        person={person}
+        crewId={crew.id}
+        canRemoveFromCrew={crew.myRole === "owner"}
+        onClose={() => setPerson(null)}
+        onDone={() => void q.refresh()}
+      />
     </SafeAreaView>
   );
 }

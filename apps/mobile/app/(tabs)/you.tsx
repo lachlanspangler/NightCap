@@ -23,7 +23,11 @@ const PROMISES = [
     "Everything waits for the morning. You review your shots before anyone sees them.",
   ],
   ["🙈", "Your face, your call", "Anyone in a photo can hide it with one tap. Tags wait for your OK."],
-  ["📍", "No location, ever", "We strip GPS from every photo and never ask where you are."],
+  [
+    "📍",
+    "No GPS, ever",
+    "We strip location data from every photo and never ask where you are. A venue name is only shown to the people in that night.",
+  ],
 ];
 
 export default function You() {
@@ -135,7 +139,8 @@ export default function You() {
         <Gap h={8} />
         {(blocks.data?.blocks ?? []).length === 0 ? (
           <Txt v="small" tone="textFaint">
-            Nobody. Blocking someone hides you from each other everywhere, and they&apos;re never told.
+            Nobody. Blocking someone hides your photos from each other, keeps them out of nights you&apos;re
+            in, and keeps you apart at City Nights. They&apos;re never told.
           </Txt>
         ) : (
           blocks.data!.blocks.map((b) => (
@@ -182,7 +187,7 @@ export default function You() {
         <HoldButton
           testID="you-delete-account"
           label="Delete my account"
-          hint="Hold. Deletes your photos everywhere."
+          hint="Hold. Deletes photos you took and hides photos you're tagged in."
           scale={scale}
           onConfirm={async () => {
             setError(null);

@@ -28,6 +28,7 @@ import { api, ApiError, mediaUrl } from "../../src/api";
 import { useCountdown } from "../../src/components/Countdown";
 import { FilmTile } from "../../src/components/FilmTile";
 import { HoldButton } from "../../src/components/HoldButton";
+import { WhosHere } from "../../src/components/WhosHere";
 import {
   Avatar,
   BigButton,
@@ -134,6 +135,8 @@ function Developing({ n, refresh }: { n: Night; refresh: () => Promise<void> }) 
   const unlock = useCountdown(n.unlockAt);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [who, setWho] = useState(false);
+  const session = useSession();
   const mine = n.shots.filter((s) => s.mine);
   const tossed = mine.filter((s) => s.status === "discarded").length;
   const ready = n.participants.filter((p) => p.ready).length;
@@ -229,6 +232,22 @@ function Developing({ n, refresh }: { n: Night; refresh: () => Promise<void> }) 
             ))}
           </Card>
           <Gap h={16} />
+          <BigButton
+            testID="album-whos-here"
+            label="Who was out · block or report"
+            kind="quiet"
+            primary={false}
+            scale={scale}
+            onPress={() => setWho(true)}
+          />
+          <WhosHere
+            n={n}
+            meId={session.userId}
+            visible={who}
+            onClose={() => setWho(false)}
+            onChanged={() => void refresh()}
+          />
+          <Gap h={8} />
           {mine.length > 0 && (
             <>
               <BigButton

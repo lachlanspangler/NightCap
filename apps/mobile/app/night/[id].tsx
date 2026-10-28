@@ -15,7 +15,9 @@ import { api, ApiError } from "../../src/api";
 import { HoldButton } from "../../src/components/HoldButton";
 import { AvatarStack, BigButton, ErrorNote, Gap, IconButton, Loading, Txt } from "../../src/components/ui";
 import { API_URL, MOCK } from "../../src/config";
+import { WhosHere } from "../../src/components/WhosHere";
 import { setFocusedNight } from "../../src/focus";
+import { useSession } from "../../src/session";
 import { haptic } from "../../src/haptics";
 import { fonts, night as N, scaleFor } from "../../src/theme";
 import type { Night } from "../../src/types";
@@ -118,6 +120,8 @@ export default function LiveNight() {
   const [taken, setTaken] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showEnd, setShowEnd] = useState(false);
+  const [who, setWho] = useState(false);
+  const session = useSession();
   const flash = useRef(new Animated.Value(0)).current;
   const pop = useRef(new Animated.Value(0)).current;
   const scale = scaleFor(true); // the camera is always night mode
@@ -231,6 +235,13 @@ export default function LiveNight() {
         style={[StyleSheet.absoluteFill, { backgroundColor: "#FFF6E8", opacity: flash }]}
       />
 
+      <WhosHere
+        n={n}
+        meId={session.userId}
+        visible={who}
+        onClose={() => setWho(false)}
+        onChanged={() => void q.refresh()}
+      />
       <SafeAreaView style={{ flex: 1, justifyContent: "space-between" }}>
         {/* Top: who's here, the code, and a way out. */}
         <View style={{ paddingHorizontal: 16, paddingTop: 6 }}>
@@ -271,12 +282,17 @@ export default function LiveNight() {
             </Pressable>
           </View>
           <Gap h={10} />
-          <View
+          <Pressable
+            testID="night-whos-here"
+            accessibilityRole="button"
+            accessibilityLabel={`Who's here: ${n.participants.length} people`}
+            onPress={() => setWho(true)}
             style={{
               flexDirection: "row",
               alignItems: "center",
               gap: 10,
               alignSelf: "flex-start",
+              minHeight: scale.target,
               backgroundColor: "rgba(12,10,20,0.6)",
               borderRadius: 999,
               paddingVertical: 6,
@@ -289,9 +305,9 @@ export default function LiveNight() {
               style={{ fontFamily: fonts.bodySemi, color: N.text, fontSize: 14 }}
               testID="night-roll-count"
             >
-              {`${n.total} in the roll`}
+              {`${n.total} in the roll ›`}
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         {/* Bottom: counter · shutter · flip/end */}

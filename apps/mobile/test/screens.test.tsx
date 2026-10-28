@@ -33,7 +33,7 @@ describe("live night (camera)", () => {
     expect(screen.getByTestId("shots-left")).toHaveTextContent("17");
     expect(screen.getByText("3917")).toBeTruthy();
     expect(screen.getByText("Develops at 10:00 AM")).toBeTruthy();
-    expect(screen.getByTestId("night-roll-count")).toHaveTextContent("19 in the roll");
+    expect(screen.getByTestId("night-roll-count")).toHaveTextContent(/19 in the roll/);
   });
 
   it("every tappable on the camera screen meets the night-mode minimum", async () => {
@@ -211,13 +211,13 @@ describe("morning review", () => {
       "/me": me(),
     });
     renderScreen(<Review />, { "/nights/n1": { night: n } });
-    expect(await screen.findByText("1 of 2 · only you can see these")).toBeTruthy();
+    expect(await screen.findByText("1 of 2 · only you (and anyone you tag) see these")).toBeTruthy();
     await act(async () => fireEvent.press(screen.getByTestId("review-toss")));
-    expect(await screen.findByText("2 of 2 · only you can see these")).toBeTruthy();
+    expect(await screen.findByText("2 of 2 · only you (and anyone you tag) see these")).toBeTruthy();
     expect(screen.getByText("Tossed. Nobody will ever see it.")).toBeTruthy();
     expect(calls.some((c) => c.path === "/shots/m0")).toBe(false); // not yet: undo window
     await act(async () => fireEvent.press(screen.getByTestId("undo")));
-    expect(await screen.findByText("1 of 2 · only you can see these")).toBeTruthy();
+    expect(await screen.findByText("1 of 2 · only you (and anyone you tag) see these")).toBeTruthy();
     await act(async () => fireEvent.press(screen.getByTestId("review-keep")));
     await act(async () => fireEvent.press(screen.getByTestId("review-keep")));
     expect(await screen.findByText("Done.")).toBeTruthy();

@@ -221,7 +221,9 @@ describe("leaving a City table (code review #6)", () => {
     t.clock.advance(3.5 * 3_600_000);
     const table = (await t.req("GET", `/city/events/${id}`, { token: ps[0]!.token })).body.event.table;
     await t.req("POST", `/nights/${table.nightId}/shots`, { token: ps[0]!.token, form: photoForm() });
-    // Photos leave too only when asked (privacy review M2: leaving is instant, photo removal deliberate).
+    // Leaving is instant and keeps your photos; removing them is a second, deliberate step (M2).
+    await t.req("POST", `/city/tables/${table.id}/leave`, { token: ps[0]!.token, json: {} });
+    expect(t.media.files.size).toBe(1);
     await t.req("POST", `/city/tables/${table.id}/leave`, {
       token: ps[0]!.token,
       json: { removePhotos: true },

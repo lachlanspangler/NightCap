@@ -114,6 +114,7 @@ export interface Night {
     isParticipant: boolean;
     ready: boolean;
     canEnd: boolean;
+    isHost: boolean;
     shotsTaken: number;
     shotsLeft: number;
     canMarkReady: boolean;

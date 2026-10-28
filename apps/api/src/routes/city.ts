@@ -426,12 +426,12 @@ city.post("/tables/:id/leave", async (c) => {
   await asService(deps.db, async (tx) => {
     const t = (
       await tx.query<{ night_id: string | null }>(
-        `select t.night_id from city_tables t join city_table_members m on m.table_id = t.id where t.id = $1 and m.user_id = $2 and m.left_at is null`,
+        `select t.night_id from city_tables t join city_table_members m on m.table_id = t.id where t.id = $1 and m.user_id = $2`,
         [tableId, userId],
       )
     ).rows[0];
     if (!t) return;
-    await tx.query(`update city_table_members set left_at = $3 where table_id = $1 and user_id = $2`, [
+    await tx.query(`update city_table_members set left_at = coalesce(left_at, $3) where table_id = $1 and user_id = $2`, [
       tableId,
       userId,
       deps.clock.now(),
