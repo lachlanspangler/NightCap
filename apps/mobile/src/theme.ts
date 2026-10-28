@@ -9,7 +9,7 @@ export const night = {
   line: "#342B47",
   text: "#F7EFE2",
   textDim: "#C4BAD0",
-  textFaint: "#A79DB6",
+  textFaint: "#B3AAC1",
   amber: "#FFB44D",
   amberDeep: "#E8892B",
   amberInk: "#1A1006", // text on amber

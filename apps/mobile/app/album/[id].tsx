@@ -324,8 +324,9 @@ function DevelopTile({
 function Unlocked({ n }: { n: Night }) {
   const { width } = useWindowDimensions();
   const scale = scaleFor(false);
-  const first = !revealed.has(n.id);
-  const [animate] = useState(first);
+  // Captured once: the first open of an unlocked album is the reveal (later renders keep it).
+  const [first] = useState(() => !revealed.has(n.id));
+  const animate = first;
   const sky = useRef(new Animated.Value(first ? 0 : 1)).current;
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
