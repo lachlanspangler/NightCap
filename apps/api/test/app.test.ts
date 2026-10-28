@@ -504,3 +504,27 @@ describe("dev tools (mock mode)", () => {
     expect((await t.req("GET", "/me/tags", { token: login.body.token })).body.tags).toHaveLength(2);
   });
 });
+
+describe("hides outlive the hider", () => {
+  it("a photo someone hid stays hidden after they delete their account", async () => {
+    const t = await testApp({ now: "2026-10-31T17:00:00Z" });
+    const { users, crew } = await crewWith(t, ["Maya", "Theo", "Jules"]);
+    const [maya, theo, jules] = users as Awaited<ReturnType<TestApp["user"]>>[];
+    t.clock.set("2026-10-31T02:00:00Z");
+    const night = (await t.req("POST", `/crews/${crew.id}/nights`, { token: maya!.token, json: {} })).body
+      .night;
+    await t.req("POST", `/nights/${night.id}/join`, { token: theo!.token });
+    await t.req("POST", `/nights/${night.id}/join`, { token: jules!.token });
+    const shot = (await t.req("POST", `/nights/${night.id}/shots`, { token: maya!.token, form: photoForm() }))
+      .body.shot;
+    t.clock.set("2026-10-31T17:00:00Z"); // noon: unlocked, day mode
+    await t.req("GET", `/nights/${night.id}`, { token: maya!.token });
+    await t.req("POST", `/shots/${shot.id}/hide`, { token: theo!.token });
+    expect((await t.req("DELETE", "/me", { token: theo!.token })).body).toMatchObject({ deleted: true });
+    expect((await t.req("GET", `/nights/${night.id}`, { token: jules!.token })).body.night.shots).toEqual([]);
+    expect(
+      (await t.req("GET", `/nights/${night.id}`, { token: maya!.token })).body.night.shots[0]
+        .hiddenFromOthers,
+    ).toBe(true);
+  });
+});

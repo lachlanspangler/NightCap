@@ -13,6 +13,7 @@ describe("canSeeShot (shared fixture with RLS)", () => {
         status: c.status,
         takenAt: at(0),
         hiddenBy: c.hiddenBy ?? [],
+        subjectHidden: c.subjectHidden,
       };
       const blocks = new Set((c.blocks ?? []).map(([a, b]) => blockKey(a, b)));
       expect(

@@ -22,6 +22,7 @@ describe("RLS visibility matches core (shared fixture)", () => {
         phase: c.phase,
       });
       const shot = await makeShot(db, night, ids[c.author]!, { status: c.status });
+      if (c.subjectHidden) await service(db, `update shots set subject_hidden = true where id = $1`, [shot]);
       for (const h of c.hiddenBy ?? [])
         await service(db, `insert into shot_hides (shot_id, user_id) values ($1, $2)`, [shot, ids[h]]);
       for (const [a, b] of c.blocks ?? [])

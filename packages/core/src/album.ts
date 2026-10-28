@@ -11,6 +11,8 @@ export interface ShotFacts {
   takenAt: Date;
   /** Users with an active hide on this shot ("that's me, hide it", or a subject-category report). */
   hiddenBy: readonly string[];
+  /** Sticky hide left by a subject whose account is gone (migration 0005). */
+  subjectHidden?: boolean;
 }
 
 /** Blocks as "blocker:blocked" keys. Blocks are mutual invisibility, so we check both directions. */
@@ -44,7 +46,7 @@ export function shotVisibility(shot: ShotFacts, ctx: ViewerContext): ShotVisibil
   if (!ctx.isParticipant) return "not_member";
   if (ctx.phase !== "unlocked") return "locked";
   if (shot.status === "discarded") return "discarded";
-  if (shot.hiddenBy.length > 0) return "hidden";
+  if (shot.hiddenBy.length > 0 || shot.subjectHidden) return "hidden";
   if (blockedEitherWay(ctx.blocks, ctx.viewerId, shot.authorId)) return "blocked";
   return "visible";
 }
@@ -100,7 +102,7 @@ export function assembleAlbum(input: AlbumInput): Album {
       authorId: s.authorId,
       takenAt: s.takenAt,
       mine: s.authorId === viewerId,
-      hiddenFromOthers: s.authorId === viewerId && s.hiddenBy.length > 0,
+      hiddenFromOthers: s.authorId === viewerId && (s.hiddenBy.length > 0 || !!s.subjectHidden),
       discarded: s.status === "discarded",
     }));
 

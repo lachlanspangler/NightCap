@@ -12,6 +12,8 @@ export interface VisibilityCase {
   /** Participants of the night. */
   participants: ("maya" | "theo" | "jules" | "sam")[];
   hiddenBy?: ("maya" | "theo" | "jules" | "sam")[];
+  /** A hider who has since deleted their account (sticky flag). */
+  subjectHidden?: boolean;
   /** [blocker, blocked] */
   blocks?: [string, string][];
   expected: boolean;
@@ -186,6 +188,27 @@ export const VISIBILITY_CASES: VisibilityCase[] = [
     status: "kept",
     phase: "unlocked",
     participants: [...all, "sam"],
+    expected: true,
+  },
+
+  {
+    name: "hidden by someone who deleted their account: still hidden",
+    author: "maya",
+    viewer: "jules",
+    status: "kept",
+    phase: "unlocked",
+    participants: all,
+    subjectHidden: true,
+    expected: false,
+  },
+  {
+    name: "author still sees a shot a departed subject hid",
+    author: "maya",
+    viewer: "maya",
+    status: "kept",
+    phase: "unlocked",
+    participants: all,
+    subjectHidden: true,
     expected: true,
   },
 ];

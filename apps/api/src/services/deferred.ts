@@ -38,6 +38,11 @@ export async function executeDeferred(
                       where created_by = $1 and exists (select 1 from crew_members where crew_id = c.id and user_id <> $1)`,
         [userId],
       );
+      // Hides outlive the hider (migration 0005): make them permanent before the cascade.
+      await tx.query(
+        `update shots set subject_hidden = true where id in (select shot_id from shot_hides where user_id = $1)`,
+        [userId],
+      );
       await tx.query(`delete from auth.users where id = $1`, [userId]);
     });
     return;
