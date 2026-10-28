@@ -211,7 +211,15 @@ describe("start_night / join / end", () => {
     const id2 = await start(theo, other, "2718").catch(() => null);
     // theo isn't in maya's night yet, so this works; joining maya's now fails
     expect(id2).toBeTruthy();
+    // By code: the same generic answer as a wrong code (no oracle, review #4)…
     expect(await code(as(theo, (tx) => tx.query(`select join_night_by_code('3141', $1)`, [NOW])))).toBe(
+      "unavailable",
+    );
+    // …directly from the crew, it says why.
+    const mayas = (await service(db, `select id from nights where join_code = '3141'`)).rows[0] as {
+      id: string;
+    };
+    expect(await code(as(theo, (tx) => tx.query(`select join_crew_night($1, $2)`, [mayas.id, NOW])))).toBe(
       "already_in_live_night",
     );
   });
@@ -595,5 +603,49 @@ describe("ready + notifications", () => {
       );
     expect((await q(theo, `select kind from notifications where kind = 'album_ready'`)).rows).toHaveLength(1);
     expect((await q(jules, `select kind from notifications where kind = 'album_ready'`)).rows).toEqual([]);
+  });
+});
+
+describe("join codes are not an oracle (code review #4)", () => {
+  it("valid and invalid codes fail the same way, and both count as attempts", async () => {
+    const s = computeNightSchedule(NOW, "America/Chicago");
+    await as(maya, (tx) =>
+      tx.query(`select start_night($1, null, null, 'America/Chicago', $2, $3, $4, $5, '8642', 24)`, [
+        crew,
+        NOW,
+        s.autoEndAt,
+        s.unlockAt,
+        s.earliestUnlockAt,
+      ]),
+    );
+    const other = await makeCrew(db, stranger, [stranger], "Mine");
+    await as(stranger, (tx) =>
+      tx.query(`select start_night($1, null, null, 'America/Chicago', $2, $3, $4, $5, '1357', 24)`, [
+        other,
+        NOW,
+        s.autoEndAt,
+        s.unlockAt,
+        s.earliestUnlockAt,
+      ]),
+    );
+    // stranger is already in their own live night: a valid code and a wrong code look identical.
+    const valid = await as(
+      stranger,
+      async (tx) =>
+        (await tx.query<{ id: string | null }>(`select join_night_by_code('8642', $1) as id`, [NOW])).rows[0]!
+          .id,
+    );
+    const wrong = await as(
+      stranger,
+      async (tx) =>
+        (await tx.query<{ id: string | null }>(`select join_night_by_code('0001', $1) as id`, [NOW])).rows[0]!
+          .id,
+    );
+    expect(valid).toBeNull();
+    expect(wrong).toBeNull();
+    const n = await service(db, `select count(*)::int as n from code_attempts where user_id = $1`, [
+      stranger,
+    ]);
+    expect(n.rows[0]).toEqual({ n: 2 });
   });
 });

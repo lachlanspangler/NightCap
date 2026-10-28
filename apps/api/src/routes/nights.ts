@@ -43,6 +43,8 @@ nights.post("/join", async (c) => {
   const { code } = await body(c, z.object({ code: z.string().max(20) }));
   const normal = normalizeCode(code);
   if (!normal) fail(422, "invalid", "Night codes are 4 digits.");
+  // Checked before the code is looked at, so this answer says nothing about the code (review #4).
+  if (await liveNightOf(deps, userId)) fail(409, "already_in_live_night");
   const id = await asUser(
     deps.db,
     userId,

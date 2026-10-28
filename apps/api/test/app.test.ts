@@ -528,3 +528,14 @@ describe("hides outlive the hider", () => {
     ).toBe(true);
   });
 });
+
+describe("join by code while already out", () => {
+  it("says you're already in a night without looking at the code", async () => {
+    const t = await testApp();
+    const { users, crew } = await crewWith(t, ["Maya"]);
+    await t.req("POST", `/crews/${crew.id}/nights`, { token: users[0]!.token, json: {} });
+    expect(
+      (await t.req("POST", "/nights/join", { token: users[0]!.token, json: { code: "0000" } })).body.error,
+    ).toBe("already_in_live_night");
+  });
+});
