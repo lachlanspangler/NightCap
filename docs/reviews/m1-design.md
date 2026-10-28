@@ -6,20 +6,20 @@ The night half is real. The type, the amber, the code and the shutter already fe
 
 ## Grades
 
-| Screen | Grade | Why |
-| --- | --- | --- |
-| 00 Welcome | B+ | Strong wordmark and tagline. The film-tile fan sits off-centre (big gap on the right), and the tiles look like caramel cards, not film. |
-| 01 Home | C+ | Nice voice, but no primary action, no live/developing state, 14pt meta text, and emoji tab icons that look like a template. |
-| 02 Crew | B- | "Start a night" is a perfect 88pt primary. "Recaps · on this night" is unclear, and every album cover is the same bokeh-silhouette art. |
-| 03 Camera (empty) | B | Huge counter and shutter. The moon button is a mystery and the hint is tiny. |
-| 04 Camera (friends) | B | Avatar stack and "12 in the roll" work. The hint says "Not even you", which the product contradicts two screens later. |
-| 05 Invite | A- | Best screen in the app. Giant Fraunces code, cream QR that holds up in a dark bar. "Done" is a bare text target. |
-| 06 Developing 3am | C | No primary action. The key card ("Get some sleep.") is below the fold. Everyone shows as "asleep" when they're still out. |
-| 07 Developing 7am | B- | "I'm up. I'm good." is great copy, but the button is clipped by the home indicator. Still full night palette at sunrise. |
-| 08 Review | B | Big photo, clear choice. Toss is a single tap right next to Keep, and undo is a small glyph in the top corner. |
-| 09 Reveal | C+ | The "reveal-start" capture looks identical to the finished album. The emotional peak is a 1.6s crossfade. |
-| 10 Album | B- | "It developed." lands. The grid is ordered by author (M,M,M,T,T,T…), and the red "Save all" is off-palette. |
-| 11 Photo | C+ | Pure black breaks the dawn palette, consent is hidden behind "⋯", and 🥴 is a drinking joke in the reaction bar. |
+| Screen              | Grade | Why                                                                                                                                     |
+| ------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 00 Welcome          | B+    | Strong wordmark and tagline. The film-tile fan sits off-centre (big gap on the right), and the tiles look like caramel cards, not film. |
+| 01 Home             | C+    | Nice voice, but no primary action, no live/developing state, 14pt meta text, and emoji tab icons that look like a template.             |
+| 02 Crew             | B-    | "Start a night" is a perfect 88pt primary. "Recaps · on this night" is unclear, and every album cover is the same bokeh-silhouette art. |
+| 03 Camera (empty)   | B     | Huge counter and shutter. The moon button is a mystery and the hint is tiny.                                                            |
+| 04 Camera (friends) | B     | Avatar stack and "12 in the roll" work. The hint says "Not even you", which the product contradicts two screens later.                  |
+| 05 Invite           | A-    | Best screen in the app. Giant Fraunces code, cream QR that holds up in a dark bar. "Done" is a bare text target.                        |
+| 06 Developing 3am   | C     | No primary action. The key card ("Get some sleep.") is below the fold. Everyone shows as "asleep" when they're still out.               |
+| 07 Developing 7am   | B-    | "I'm up. I'm good." is great copy, but the button is clipped by the home indicator. Still full night palette at sunrise.                |
+| 08 Review           | B     | Big photo, clear choice. Toss is a single tap right next to Keep, and undo is a small glyph in the top corner.                          |
+| 09 Reveal           | C+    | The "reveal-start" capture looks identical to the finished album. The emotional peak is a 1.6s crossfade.                               |
+| 10 Album            | B-    | "It developed." lands. The grid is ordered by author (M,M,M,T,T,T…), and the red "Save all" is off-palette.                             |
+| 11 Photo            | C+    | Pure black breaks the dawn palette, consent is hidden behind "⋯", and 🥴 is a drinking joke in the reaction bar.                        |
 
 ## Top 10 issues (by impact)
 
@@ -48,15 +48,15 @@ Inputs: new core-01…12 and core-loop.mp4 (I stepped through the reveal frame b
 
 ### Updated grades
 
-| Screen | R1 | R2 | Why |
-| --- | --- | --- | --- |
-| 03/04 Camera | B | B+ | The hint is honest now and "‹ Home" is clear. "Wrap up" breaks onto two lines and has no visible pill, so it reads as a caption, not a 56pt target. |
-| 06 Developing 3am | C | A- | The 64pt "6h 12m" hero, then "Get some sleep." above the fold. Right hierarchy, right voice. "not up yet" fixes the tone. |
-| 07 Developing 7am | B- | A- | The sticky "I'm up. I'm good." bar sits in the thumb zone and nothing gets clipped. |
-| 08 Review | B | B+ | Keep is clearly the primary, there's a real gap, and Toss can be undone. The top toast is the right call given what Maestro caught, but undo is now out of thumb reach. |
-| 09 Reveal gate | — | A | "Good morning. Last night is ready." and "Nobody's seen them yet" are exactly right. The hold fills amber, the sky goes ink → dawn, and the frames develop in order. This is the peak we wanted. |
-| 10/11 Album | B- | B+ | The ink "Save all" fits the dawn palette. The date shows twice (header and meta line). The demo has only one divider ("AFTER 2 AM"), so the grid still looks grouped by author. |
-| 12 Photo | C+ | B | The ink background with a peach glow fixes the palette. 🌅 renders as a framed picture and reads as an image, not a reaction. I couldn't check "That's me, hide it" because this screenshot is your own photo; please capture it on a friend's photo. |
+| Screen            | R1  | R2  | Why                                                                                                                                                                                                                                                   |
+| ----------------- | --- | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 03/04 Camera      | B   | B+  | The hint is honest now and "‹ Home" is clear. "Wrap up" breaks onto two lines and has no visible pill, so it reads as a caption, not a 56pt target.                                                                                                   |
+| 06 Developing 3am | C   | A-  | The 64pt "6h 12m" hero, then "Get some sleep." above the fold. Right hierarchy, right voice. "not up yet" fixes the tone.                                                                                                                             |
+| 07 Developing 7am | B-  | A-  | The sticky "I'm up. I'm good." bar sits in the thumb zone and nothing gets clipped.                                                                                                                                                                   |
+| 08 Review         | B   | B+  | Keep is clearly the primary, there's a real gap, and Toss can be undone. The top toast is the right call given what Maestro caught, but undo is now out of thumb reach.                                                                               |
+| 09 Reveal gate    | —   | A   | "Good morning. Last night is ready." and "Nobody's seen them yet" are exactly right. The hold fills amber, the sky goes ink → dawn, and the frames develop in order. This is the peak we wanted.                                                      |
+| 10/11 Album       | B-  | B+  | The ink "Save all" fits the dawn palette. The date shows twice (header and meta line). The demo has only one divider ("AFTER 2 AM"), so the grid still looks grouped by author.                                                                       |
+| 12 Photo          | C+  | B   | The ink background with a peach glow fixes the palette. 🌅 renders as a framed picture and reads as an image, not a reaction. I couldn't check "That's me, hide it" because this screenshot is your own photo; please capture it on a friend's photo. |
 
 ### Still open (none block sign-off)
 

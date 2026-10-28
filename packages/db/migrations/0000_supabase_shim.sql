@@ -35,3 +35,8 @@ grant usage on schema auth to anon, authenticated, service_role;
 grant execute on function auth.uid(), auth.role(), auth.jwt() to anon, authenticated, service_role;
 grant select on auth.users to service_role;
 grant insert, delete on auth.users to service_role;
+
+-- PGlite / mock mode only: the API's dev clock (time travel) may pass any p_now. On Supabase this
+-- shim never runs, so 0007's default (false) applies and p_now is clamped to the DB clock.
+create or replace function public.nc_clock_override_allowed() returns boolean
+language sql immutable as $$ select true $$;

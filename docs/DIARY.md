@@ -61,6 +61,7 @@ what it felt like.
   code changes; that keeps it predictable and light.
 
 ## 2026-10-28 — Milestone 1 reviews: design critic (signed off in round 2)
+
 - **Round 1 (no sign-off):** the morning reveal had no ceremony; the album looked author-ordered;
   the camera copy said "not even you" while review lets you see your own; the 3am screen had no
   hero; Toss was one tap from Keep; the viewer was off-brand and hid consent behind "⋯"; the red
